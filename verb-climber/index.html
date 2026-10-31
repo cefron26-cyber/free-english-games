@@ -430,6 +430,8 @@ const PIX = {
   chunk: ['.WL.', 'LIIc', 'IIcc', '.cc.'],
   crown: ['K..K..K', 'KK.K.KK', 'KKKKKKK', 'K.KKK.K', 'KKKKKKK', 'KKKKKKK'], // botón de logros (fondo amarillo)
   lock: ['.LLL.', 'L...L', 'L...L', 'YYYYY', 'YYzYY', 'YYzYY', 'yyyyy'], // skin de logro bloqueada (tienda)
+  flame: ['...R...', '..RR...', '..RRR.R', '.RRyRRR', '.RyyyRR', 'RRyYyyR', 'RyYYYyR', 'RyYYYyR', '.RyYyR.'], // racha de días
+
 };
 const MEDAL_COLORS = {
   bronze: { a: '#C9945F', b: '#9C5A3C', c: '#F2CFB3' },
@@ -450,7 +452,8 @@ function pixCanvas(rows, over) {
   return cv;
 }
 function buildProvisionalSprites() {
-  for (const k of ['fish', 'pause', 'sndOn', 'sndOff', 'musOn', 'musOff', 'star', 'check', 'chunk', 'crown', 'lock']) SPR[k] = pixCanvas(PIX[k]);
+  for (const k of ['fish', 'pause', 'sndOn', 'sndOff', 'musOn', 'musOff', 'star', 'check', 'chunk', 'crown', 'lock', 'flame']) SPR[k] = pixCanvas(PIX[k]);
+  SPR.flameOff = pixCanvas(PIX.flame, { R: '#5A6470', y: '#8A94A0', Y: '#B8C0CA' }); // racha que hoy todavía no se jugó
   SPR.starLocked = pixCanvas(PIX.star, { Y: '#5A6470', y: '#2850A8' });
   for (const m in MEDAL_COLORS) SPR['medal_' + m] = pixCanvas(PIX.medal, MEDAL_COLORS[m]);
   // Patrón de franjas negro/rojo para la pantalla de error (inspirado en error_screen_ref)
@@ -1681,17 +1684,19 @@ function drawToasts(c) {
   c.fillStyle = PAL.k; c.fillRect(x - 1, y - 1, w + 2, h + 2);
   c.fillStyle = PAL.N; c.fillRect(x, y, w, h);
   c.fillStyle = PAL.Y; c.fillRect(x, y, w, 1);
-  c.drawImage(SPR.star, x + 5, y + 6);
-  drawWord('ACHIEVEMENT!', x + 19, y + 4, 1, PAL.Y, 'left', c);
+  if (t.a.icon === 'flame') c.drawImage(SPR.flame, x + 6, y + 6); else c.drawImage(SPR.star, x + 5, y + 6);
+  drawWord(t.a.head || 'ACHIEVEMENT!', x + 19, y + 4, 1, PAL.Y, 'left', c);
   drawWord(t.a.name, x + 19, y + 12, 1, PAL.W, 'left', c);
 }
 
 // ===================== GAMIFICACIÓN =====================
 // fishBank = peces para gastar en la tienda (totalFish solo cuenta, para el logro)
-let saveData = { best: 0, games: 0, totalFish: 0, fishBank: null, skin: 'default', skins: {}, ach: {}, weak: {}, sfxMuted: false, musicMuted: false };
+// streak = racha de días jugados seguidos { n, best, last: 'AAAA-MM-DD' (fecha local) }
+let saveData = { best: 0, games: 0, totalFish: 0, fishBank: null, skin: 'default', skins: {}, ach: {}, weak: {}, sfxMuted: false, musicMuted: false, streak: { n: 0, best: 0, last: '' } };
 function loadSave() {
   try { const s = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); if (s) saveData = Object.assign(saveData, s); } catch (e) { /* sin almacenamiento */ }
   saveData.ach = saveData.ach || {}; saveData.weak = saveData.weak || {}; saveData.skins = saveData.skins || {};
+  if (!saveData.streak || typeof saveData.streak !== 'object') saveData.streak = { n: 0, best: 0, last: '' };
   if (saveData.fishBank == null) saveData.fishBank = saveData.totalFish || 0; // los peces ya pescados cuentan para la tienda
   if (!SKINS.some((s) => s.id === saveData.skin)) saveData.skin = 'default';
   sfxMuted = !!saveData.sfxMuted; musicMuted = !!saveData.musicMuted;
@@ -1702,6 +1707,18 @@ function unlock(id) {
   if (G && G.mode !== 'regular') return; // los logros solo cuentan en REGULAR
   const a = ACHIEVEMENTS.find((q) => q.id === id); if (!a) return;
   saveData.ach[id] = Date.now(); persist(); toasts.queue.push(a);
+}
+// Racha de días (pedido del docente 2026-10-31): cuenta el día al terminar la primera partida (cualquier modo,
+// no el tutorial). Jugar ayer y hoy la sube; saltarse un día la vuelve a 1. Se ve en el título y avisa con un toast
+function dayStr(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function todayStr() { return dayStr(new Date()); }
+function yesterdayStr() { const d = new Date(); d.setDate(d.getDate() - 1); return dayStr(d); }
+function streakNow() { const k = saveData.streak; return k.last === todayStr() || k.last === yesterdayStr() ? k.n : 0; }
+function markDayPlayed() {
+  const k = saveData.streak, t = todayStr();
+  if (k.last === t) return;
+  k.n = k.last === yesterdayStr() ? k.n + 1 : 1; k.last = t; k.best = Math.max(k.best || 0, k.n);
+  toasts.queue.push({ head: 'DAY STREAK!', name: k.n === 1 ? 'DAY 1. COME BACK TOMORROW!' : k.n + ' DAYS IN A ROW!', icon: 'flame' });
 }
 // Verbos por repasar (clave: presente). Fallar lo marca; cada acierto con él descuenta uno
 function markWeak(pl, wrong) {
@@ -1875,6 +1892,7 @@ function gameOver() {
   if (G.over) return;
   G.over = true;
   saveData.games = (saveData.games || 0) + 1;
+  if (!G.tutorial) markDayPlayed();
   G.newRecord = G.score > bestOf(G.mode) && G.score > 0;
   if (G.newRecord) setBest(G.mode, G.score);
   persist();
@@ -2169,6 +2187,13 @@ function drawTitle(c) {
   drawSubtitle(c, 83);
   for (const b of uiButtons) drawButton(c, b);
   if (saveData.best) drawWordO('BEST: ' + saveData.best, VW / 2, titleBtnY() + 102, 1, PAL.u, PAL.N, 'center', c);
+  const sk = streakNow();
+  if (sk) { // racha: llama encendida si hoy ya se jugó; gris si todavía falta jugar hoy
+    const lit = saveData.streak.last === todayStr(), label = 'STREAK: ' + sk + (sk === 1 ? ' DAY' : ' DAYS');
+    const w = measureWord(label, 1) + 10, x0 = R(VW / 2 - w / 2), y0 = titleBtnY() + 113;
+    c.drawImage(lit ? SPR.flame : SPR.flameOff, x0, y0 - 2);
+    drawWordO(label, x0 + 10, y0, 1, lit ? PAL.Y : PAL.L, PAL.N, 'left', c);
+  }
   // suelo, esquimal y marea
   const floorY = VH - 64;
   drawSlice(c, 'ice_nieve', WALL, floorY, VW - WALL * 2);
