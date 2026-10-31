@@ -2,9 +2,9 @@
 // Cada archivo se guarda con su huella: al subir cambios solo se vuelve a bajar lo que cambió.
 const ARCHIVOS = {
  "avatar.png": "b39dc88299",
- "corner-shop/index.html": "36d1920e85",
+ "corner-shop/index.html": "4c606e6a9f",
  "estilos.css": "86cdfb4377",
- "face-maker/index.html": "9dcd865e18",
+ "face-maker/index.html": "3570214b0e",
  "fuentes/fredoka-latin-600-normal.woff2": "b9fca786c0",
  "fuentes/LICENSE-fredoka.txt": "2a60a248a9",
  "fuentes/LICENSE-lilita-one.txt": "1a40e6e298",
@@ -23,7 +23,7 @@ const ARCHIVOS = {
  "miniaturas/face-maker.jpg": "1b4048e4f7",
  "miniaturas/verb-climber.jpg": "3a778fe964",
  "portal.js": "379ae3aa2e",
- "verb-climber/index.html": "9853a00d0f"
+ "verb-climber/index.html": "c6cecfa502"
 };
 const JUEGOS = ["corner-shop/index.html","face-maker/index.html","verb-climber/index.html"];
 const CACHE = 'portal-juegos';
