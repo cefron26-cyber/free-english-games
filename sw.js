@@ -3,7 +3,7 @@
 const ARCHIVOS = {
  "avatar.png": "b39dc88299",
  "corner-shop/index.html": "4c606e6a9f",
- "estilos.css": "86cdfb4377",
+ "estilos.css": "dc9fe293e6",
  "face-maker/index.html": "3570214b0e",
  "fuentes/fredoka-latin-600-normal.woff2": "b9fca786c0",
  "fuentes/LICENSE-fredoka.txt": "2a60a248a9",

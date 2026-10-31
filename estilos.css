@@ -80,9 +80,9 @@ main { width: 100%; max-width: 1180px; flex: 1; display: flex; flex-direction: c
 }
 .jugar::before { content: ""; position: absolute; left: 30px; top: 22px; border-style: solid; border-width: 17px 0 17px 27px; border-color: transparent transparent transparent #7a4b00; }
 .nombre {
-  display: block; padding: 13px 8px 15px; text-align: center;
-  font-family: "Lilita", "Fredoka", sans-serif; font-weight: 400; font-size: clamp(1.7rem, 6.5vw, 2.05rem); letter-spacing: .5px; line-height: 1.1;
-  text-shadow: 0 3px 0 var(--oscuro), 0 5px 8px rgba(0, 0, 0, .18);
+  display: block; padding: 16px 6px 18px; text-align: center;
+  font-family: "Pixel", monospace; font-weight: 400; font-size: clamp(1.05rem, 4.4vw, 1.3rem); letter-spacing: 1px; line-height: 1.5;
+  text-shadow: 2px 2px 0 var(--oscuro), 4px 4px 0 rgba(0, 0, 0, .25);
 }
 @media (hover: hover) {
   .tarjeta:hover { transform: translateY(-10px) rotate(-2deg); box-shadow: inset 0 5px 0 var(--claro), 0 18px 0 var(--oscuro), 0 34px 36px var(--sombra); }
