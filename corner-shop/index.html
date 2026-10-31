@@ -214,10 +214,12 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
     cheer: { l: [[89, 250], [56, 226], [42, 182]], r: [[151, 250], [184, 226], [198, 182]], open: 'lr' },
     cross: { r: [[151, 250], [160, 296], [102, 292]], l: [[89, 250], [80, 292], [140, 286]], front: 'l' },
     hips: { l: [[89, 250], [56, 290], [82, 322]], r: [[151, 250], [184, 290], [158, 322]] },
+    // paying (money mode): one arm reaches down to the counter, palm up, to give the money and take the change
+    pay: { l: [[89, 250], [66, 284], [76, 310]], r: [[151, 250], [161, 298], [162, 336]], up: 'l', over: 'l' }, // over: in front of long hair and braids
     // yawning: one hand over the mouth (drawn over the face), the other arm bent up behind the head
     yawn: { l: [[89, 250], [48, 264], [104, 202]], r: [[151, 250], [204, 200], [180, 150]], open: 'l', over: 'l' }
   };
-  function poseFor(ex) { return ex === 'greet' || ex === 'hello' ? POSES.wave : ex === 'yawn' ? POSES.yawn : ex === 'happy' ? POSES.cheer : ex === 'serious' ? POSES.cross : ex === 'angry' ? POSES.hips : POSES.rest; }
+  function poseFor(ex) { return ex === 'greet' || ex === 'hello' ? POSES.wave : ex === 'yawn' ? POSES.yawn : ex === 'happy' ? POSES.cheer : ex === 'serious' ? POSES.cross : ex === 'angry' ? POSES.hips : ex === 'pay' ? POSES.pay : POSES.rest; }
   function lerp(a, b, t) { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]; }
   function f1(v) { return v.toFixed(1); }
   // tapered capsule from a (radius ra) to b (radius rb): a limb that is thicker at the top
@@ -241,6 +243,11 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
     return P('M-10 -9 C-13 0 -11 12 0 12 C11 12 13 0 10 -9 C8 -14 -8 -14 -10 -9Z', sk, 2.5) +
       L('M-10 -3 C-5 -2 -3 2 -4 7', dk(sk), 2.2, .7) + L('M1 8 V11 M6 6 V10', sh(sk), 1.8, .8);
   }
+  // palm up, seen from the front and a little from above, resting on the counter (paying)
+  function handUp(sk) {
+    return merged(['M-17 0 C-17 -8 -7 -11 1 -11 C9 -11 17 -8 17 -1 C17 6 9 9 0 9 C-9 9 -17 7 -17 0Z', 'M-9 -7 C-12 -15 -19 -16 -21 -12 C-22 -8 -18 -4 -13 -2Z'], sk, 4.6) +
+      L('M-12 -3 C-6 -6 4 -6 10 -3', sh(sk), 2.4, .8) + L('M-11 4 H-5 M-3 6 H3 M5 5 H10', dk(sk), 1.8, .45);
+  }
   function arm(pts, c, sleeve, longSl, open) {
     var sk = c.skin, s = '', sho = pts[0], elb = pts[1], hp = pts[2];
     var wr = lerp(elb, hp, .82);
@@ -262,7 +269,8 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
     s += L('M' + f1(sho[0] + nx * 7 * side) + ' ' + f1(sho[1] + ny * 7 * side) + ' L' + f1(sho[0] + dx * .45 + nx * 8 * side) + ' ' + f1(sho[1] + dy * .45 + ny * 8 * side), lt(sleeve), 4, .45);
     // hand, turned along the forearm, thumb toward the body
     var fx = hp[0] - elb[0], fy = hp[1] - elb[1], mir = hp[0] < 120 ? -1 : 1;
-    if (open) s += '<g transform="translate(' + hp[0] + ' ' + hp[1] + ') rotate(' + f1(Math.atan2(fx, -fy) * 180 / Math.PI) + ') scale(' + mir + ' 1)">' + hand(true, sk) + '</g>';
+    if (open === 'up') s += '<g transform="translate(' + f1(hp[0]) + ' ' + f1(hp[1] + 6) + ') scale(1.35)">' + handUp(sk) + '</g>';
+    else if (open) s += '<g transform="translate(' + hp[0] + ' ' + hp[1] + ') rotate(' + f1(Math.atan2(fx, -fy) * 180 / Math.PI) + ') scale(' + mir + ' 1)">' + hand(true, sk) + '</g>';
     else s += '<g transform="translate(' + f1(hp[0]) + ' ' + f1(hp[1]) + ') rotate(' + f1(Math.atan2(-fx, fy) * 180 / Math.PI) + ') scale(' + (-mir) + ' 1)">' + hand(false, sk) + '</g>';
     return s;
   }
@@ -378,7 +386,7 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
     if (c.topStyle === 'stripes' || c.topStyle === 'tee') s += L('M104 229 C108 240 132 240 136 229', c.topStyle === 'tee' ? '#ffffff' : '#2f5d9a', 5);
     if (c.acc.indexOf('apron') >= 0) s += L('M98 236 C104 246 136 246 142 236', '#3e9a5a', 4);
     // arms
-    var front = pose.front, lArm = arm(pose.l, c, sleeve, longSl, pose.open && pose.open.indexOf('l') >= 0), rArm = arm(pose.r, c, sleeve === t ? sh(t) : sleeve, longSl, pose.open && pose.open.indexOf('r') >= 0);
+    var front = pose.front, lArm = arm(pose.l, c, sleeve, longSl, pose.up === 'l' ? 'up' : pose.open && pose.open.indexOf('l') >= 0), rArm = arm(pose.r, c, sleeve === t ? sh(t) : sleeve, longSl, pose.open && pose.open.indexOf('r') >= 0);
     s += pose.over === 'l' ? rArm : front === 'l' ? rArm + lArm : lArm + rArm;
     if (hs.mid) s += hs.mid;
     // ears
@@ -1037,12 +1045,13 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       return b + '<rect x="78" y="10" width="34" height="112" rx="5" fill="#f4e3b0" stroke="#b5841a" stroke-width="3"/><text x="95" y="76" font-size="26" font-family="Arial Black, Arial, sans-serif" font-weight="900" text-anchor="middle" fill="#b5841a">$</text>';
     })()),
     // the sweet jar of the counter becomes a tip jar (same outline, drawn over it)
+    // the inside of the jar, drawn over the sweets of the background
+    tipJarBack: S(70, 90, '<path d="M6 24 C2 46 2 78 12 86 H58 C68 78 68 46 64 24Z" fill="#e6f4f6"/>'),
     tipJar: S(70, 90, (function () {
       var g = U('tj'), m = '';
       [[16, 70, '#9ccf9f'], [30, 74, '#cfe6c8'], [46, 70, '#9ccf9f'], [22, 60, '#cfe6c8'], [40, 62, '#b9dbb3']].forEach(function (q) { m += '<rect x="' + q[0] + '" y="' + q[1] + '" width="20" height="10" rx="2" fill="' + q[2] + '" stroke="#2f6b46" stroke-width="1.2" transform="rotate(' + ((q[0] * 7) % 30 - 15) + ' ' + (q[0] + 10) + ' ' + (q[1] + 5) + ')"/>'; });
       [[20, 80], [50, 80], [36, 84]].forEach(function (q) { m += '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="5" fill="#d5dbe0" stroke="#6b747c" stroke-width="1.2"/>'; });
       return '<defs>' + lin(g, [[0, '#ffffff', .55], [.3, '#ffffff', .12], [1, '#ffffff', .3]]) + '</defs>' +
-        '<path d="M6 24 C2 46 2 78 12 86 H58 C68 78 68 46 64 24Z" fill="#dff3f6" opacity=".45"/>' + m +
         '<rect x="10" y="36" width="50" height="16" rx="3" fill="#fff8ec" stroke="#2f6b46" stroke-width="1.6"/><text x="35" y="49" font-size="13" font-family="Arial Black, Arial, sans-serif" font-weight="900" text-anchor="middle" fill="#2f6b46">TIPS</text>' +
         '<path d="M6 24 C2 46 2 78 12 86 H58 C68 78 68 46 64 24Z" fill="url(#' + g + ')" stroke="#5f8a90" stroke-width="3"/>' +
         '<rect x="2" y="12" width="66" height="14" rx="5" fill="#2f6b46" stroke="#173b2a" stroke-width="2.5"/><rect x="24" y="15" width="22" height="4" rx="2" fill="#173b2a"/>';
@@ -1089,7 +1098,7 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
 
   /* ---------------- UI icons ---------------- */
   var UI = {
-    bill1: MONEY.bill1, bill5: MONEY.bill5, bill10: MONEY.bill10, bill20: MONEY.bill20, coin50: MONEY.coin50, wad: MONEY.wad, tipJar: MONEY.tipJar, cashHand: cashierHand(window.CSChars.keeper.skin),
+    bill1: MONEY.bill1, bill5: MONEY.bill5, bill10: MONEY.bill10, bill20: MONEY.bill20, coin50: MONEY.coin50, wad: MONEY.wad, tipJar: MONEY.tipJar, tipJarBack: MONEY.tipJarBack, cashHand: cashierHand(window.CSChars.keeper.skin),
     arrowR: S(100, 100, '<path d="M20 50 H74 M52 26 L76 50 L52 74" fill="none" stroke="#fff7e8" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>'),
     arrowL: S(100, 100, '<path d="M80 50 H26 M48 26 L24 50 L48 74" fill="none" stroke="#1d3557" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>'),
     home: S(100, 100, '<path d="M14 50 L50 18 L86 50 M26 42 V84 H74 V42" fill="none" stroke="#1d3557" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>'),
@@ -1775,7 +1784,7 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
   function startDay(scene, d) {
     var day = dayFor(d, curDiff());
     day.title = DAYS[d].title;
-    G = { mode: 'days', d: d, diff: curDiff(), day: day, idx: 0, points: 0, results: [], orders: customers(day), basket: [], streak: 0, bestStreak: 0, opened: false, cashOn: !!save.moneyOn, sales: 0, tips: 0 };
+    G = { mode: 'days', d: d, diff: curDiff(), day: day, idx: 0, points: 0, results: [], orders: customers(day), basket: [], streak: 0, bestStreak: 0, opened: false, cashOn: !!save.moneyOn, sales: 0, tips: 0, jar: [] };
     go(scene, 'Counter', { mode: 'arrive' });
   }
   function cur() { return G.orders[G.idx]; }
@@ -1799,7 +1808,7 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
   function startListen(scene, diff) {
     if (diff == null) diff = curDiff();
     var day = listenDay(diff);
-    G = { mode: 'listen', d: -1, diff: diff, day: day, idx: 0, points: 0, results: [], orders: customers(day), basket: [], streak: 0, bestStreak: 0, opened: false, cashOn: !!save.moneyOn, sales: 0, tips: 0 };
+    G = { mode: 'listen', d: -1, diff: diff, day: day, idx: 0, points: 0, results: [], orders: customers(day), basket: [], streak: 0, bestStreak: 0, opened: false, cashOn: !!save.moneyOn, sales: 0, tips: 0, jar: [] };
     go(scene, 'Counter', { mode: 'arrive' });
   }
   // shop days and listening rounds have a fixed number of customers and points
@@ -1926,6 +1935,9 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
     steak: 500, chicken: 200, fish: 400, sausages: 250, bacon: 300 };
   // tip by mistakes: a wad of money (perfect), a bill and cents (1), some cents (2), nothing (3 or more: they leave angry)
   var TIP_CENTS = [500, 150, 50, 0];
+  // customers drawn with the paying pose ('pay': their own arm on the counter, palm up): all of them (approved
+  // by the teacher with Mia). Anyone not in the list would use the separate hand hand_<id>
+  var PAY_POSE = A.chars.map(function (c) { return c.id; });
   function moneyOn() { return !!(G && G.cashOn && dayLike()); }
   // sized products: the price above is the small one; medium +$1, large +$2 (no size on the day = medium)
   function priceOf(p, size) { var b = PRICE[p.id] || 100; return b + (size === 'large' ? 200 : size === 'medium' || (!size && p.sized) ? 100 : 0); }
@@ -2271,7 +2283,7 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       Object.keys(FOOD).forEach(function (k) { add('f_' + k, FOOD[k], TEX, TEX); });
       Object.keys(A.containers).forEach(function (k) { add('f_' + k, A.containers[k], TEX, TEX); });
       A.chars.concat([A.keeper]).forEach(function (c) {
-        ['wait', 'greet', 'happy', 'serious', 'angry'].concat(c === A.keeper ? [] : ['blink']).forEach(function (ex) { add('ch_' + c.id + '_' + ex, A.character(c, ex), 300, 638); });
+        ['wait', 'greet', 'happy', 'serious', 'angry'].concat(c === A.keeper ? [] : ['blink']).concat(PAY_POSE.indexOf(c.id) >= 0 ? ['pay'] : []).forEach(function (ex) { add('ch_' + c.id + '_' + ex, A.character(c, ex), 300, 638); });
         add('mo_' + c.id + '_1', A.mouth(c, 1), 65, 65); add('mo_' + c.id + '_2', A.mouth(c, 2), 65, 65);
       });
       A.chars.forEach(function (c) { add('hand_' + c.id, A.hand(c), 480, 260); });
@@ -2657,7 +2669,13 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       ['oil', 'cereal', 'juice', 'rice', 'chips', 'water', 'milk', 'soda', 'yogurt'].forEach(function (k, i) { s.add.image(110 + i * 92, 172, 'f_' + k).setOrigin(.5, 1).setDisplaySize(84, 84); });
       ['tuna', 'soup', 'beans', 'apple', 'corn', 'peas', 'orange', 'banana', 'egg'].forEach(function (k, i) { s.add.image(110 + i * 92, 312, 'f_' + k).setOrigin(.5, 1).setDisplaySize(84, 84); });
       // money mode: the sweet jar on the counter is a tip jar
-      this.jar = moneyOn() ? this.add.image(961, 474, 'ui_tipJar').setOrigin(.5, 1).setDisplaySize(70, 90) : null;
+      this.jar = null;
+      if (moneyOn()) {
+        this.add.image(961, 474, 'ui_tipJarBack').setOrigin(.5, 1).setDisplaySize(70, 90);
+        this.jarIn = this.add.container(0, 0);
+        G.jar.forEach(function (k, i) { s.jarPut(k, i, false); });
+        this.jar = this.add.image(961, 474, 'ui_tipJar').setOrigin(.5, 1).setDisplaySize(70, 90);
+      }
       this.cust = this.add.image(CUST_X, CUST_Y, 'ch_' + c.ch.id + '_wait').setOrigin(.5, 1).setScale(CUST_S);
       this.mouth = makeMouth(this, this.cust, c.ch);
       bgImg(this, 'bg_counterFront', 468, 'bottom');
@@ -2958,17 +2976,24 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       SFX.till(1);
       // the customer pays: the hand comes over the counter with the money, the money goes into the register
       this.say([{ text: 'Here\'s $' + (paid / 100) + '.' }]);
-      var hand = M.hand = this.add.image(CUST_X + 40, 486, 'hand_' + c.ch.id).setDisplaySize(200, 108).setDepth(47);
+      // the customer reaches down to the counter with the money (their own arm: pose 'pay', neutral face)
+      var hand = null;
+      if (PAY_POSE.indexOf(c.ch.id) >= 0) {
+        if (this.idle) { this.idle.stop(); this.cust.scaleY = CUST_S; }
+        this.cust.setTexture('ch_' + c.ch.id + '_pay');
+        M.own = true; M.palm = { x: 284, y: 452 };
+      } else hand = M.hand = this.add.image(CUST_X + 40, 486, 'hand_' + c.ch.id).setDisplaySize(200, 108).setDepth(47);
       var cash = this.add.container(0, 0).setDepth(48);
       billsFor(paid).forEach(function (v, i) { cash.add(s.add.image(M.palm.x + i * 8, M.palm.y - 16 - i * 7, 'ui_bill' + v).setDisplaySize(100, 45).setAngle(-8 + i * 6)); });
       M.fx.add(cash);
-      if (RM) { hand.x = 470; cash.destroy(); this.showTill(); return; }
-      hand.setAlpha(0); cash.setAlpha(0); cash.x = CUST_X + 40 - 470;
-      this.tweens.add({ targets: hand, x: 470, alpha: 1, duration: 420, ease: 'Back.easeOut' });
-      this.tweens.add({ targets: cash, x: 0, alpha: 1, duration: 420, ease: 'Back.easeOut' });
+      if (RM) { if (hand) hand.x = 470; cash.destroy(); this.showTill(); return; }
+      cash.setAlpha(0);
+      if (hand) { hand.setAlpha(0); cash.x = CUST_X + 40 - 470; this.tweens.add({ targets: hand, x: 470, alpha: 1, duration: 420, ease: 'Back.easeOut' }); }
+      else cash.y = 24;
+      this.tweens.add({ targets: cash, x: 0, y: 0, alpha: 1, duration: 420, ease: 'Back.easeOut' });
       this.time.delayedCall(1300, function () {
         SFX.pick();
-        s.tweens.add({ targets: cash, x: 600, y: -110, scale: .5, alpha: 0, duration: 450, ease: 'Cubic.easeIn', onComplete: function () { cash.destroy(); SFX.till(1); s.showTill(); } });
+        s.tweens.add({ targets: cash, x: 1110 - M.palm.x, y: 380 - M.palm.y, scale: .5, alpha: 0, duration: 450, ease: 'Cubic.easeIn', onComplete: function () { cash.destroy(); SFX.till(1); s.showTill(); } });
       });
     },
     // the whole front of the counter: receipt (left), the shopkeeper's hand (middle), the red cash drawer (right)
@@ -3008,7 +3033,7 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       });
       // the shopkeeper's open hand; the change goes on her palm
       M.cash = this.add.container(0, 0);
-      M.cash.add(this.add.image(700, bot + 12, 'ui_cashHand').setOrigin(.5, 1).setDisplaySize(200, 208));
+      M.cash.add(this.add.image(700, bot + 12, 'ui_cashHand').setOrigin(.5, 1).setDisplaySize(200, 208).setFlipX(true)); // thumb on the left (teacher)
       M.layer.add(M.cash);
       M.pile = { x: 694, y: 652 };
       M.drop = new Phaser.Geom.Rectangle(580, 500, 240, 230);
@@ -3094,18 +3119,29 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
         M.items = []; M.fx.add(pile); M.handPile = pile;
         SFX.pick();
         s.tweens.add({ targets: M.cash, x: 0, y: 0, duration: D(380), ease: 'Cubic.easeOut' });
-        var ok = M.sum === M.change;
+        var ok = M.sum === M.change, c = cur();
         if (ok) {
           G.sales += M.total; earn(M.total);
           save.stats.change = (save.stats.change || 0) + 1; persist();
           if (save.stats.change >= 10) award('change10');
-          SFX.till(3); s.say([{ text: 'Thank you! That\'s the right change.' }]);
-        } else {
-          SFX.nope();
-          s.say([{ text: 'Hmm, that\'s not right. You gave me ' + fmtMoney(M.sum) + '. My change is ' + fmtMoney(M.change) + '.', bad: true }]);
         }
         s.updCash();
-        s.time.delayedCall(D(ok ? 1300 : 2600), function () {
+        // the customer takes the money and goes back to a neutral face, then celebrates the right change or complains
+        function answer() {
+          if (ok) {
+            SFX.till(3); s.cust.setTexture('ch_' + c.ch.id + '_happy'); s.hop(1, 26); s.floaters('heart');
+            s.say([{ text: 'Thank you! That\'s the right change.' }]);
+          } else {
+            SFX.nope(); s.cust.setTexture('ch_' + c.ch.id + '_serious');
+            s.say([{ text: 'Hmm, that\'s not right. You gave me ' + fmtMoney(M.sum) + '. My change is ' + fmtMoney(M.change) + '.', bad: true }]);
+          }
+        }
+        if (M.own) s.time.delayedCall(D(500), function () {
+          s.cust.setTexture('ch_' + c.ch.id + '_wait');
+          if (RM) pile.setVisible(false); else s.tweens.add({ targets: pile, alpha: 0, y: 24, duration: 260 });
+          s.time.delayedCall(D(700), answer);
+        }); else answer();
+        s.time.delayedCall(D((M.own ? 1200 : 0) + (ok ? 1600 : 2700)), function () {
           // the till closes; the customer puts the money away
           if (RM) { M.layer.setVisible(false); pile.destroy(); }
           else { s.tweens.add({ targets: M.layer, y: 260, alpha: 0, duration: 300, ease: 'Back.easeIn' }); s.tweens.add({ targets: pile, alpha: 0, x: -60, duration: 300, onComplete: function () { pile.destroy(); } }); }
@@ -3117,8 +3153,8 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
     tipJar: function () {
       var s = this, M = this.till, e = Math.min(3, M.res.errors), cents = TIP_CENTS[e], P = M.palm;
       function end() {
-        if (!RM) s.tweens.add({ targets: M.hand, x: CUST_X + 40, alpha: 0, duration: 300 });
-        s.time.delayedCall(D(320), function () { M.layer.destroy(); M.fx.destroy(); M.hand.destroy(); s.till = null; M.next(); });
+        if (M.hand && !RM) s.tweens.add({ targets: M.hand, x: CUST_X + 40, alpha: 0, duration: 300 });
+        s.time.delayedCall(D(320), function () { M.layer.destroy(); M.fx.destroy(); if (M.hand) M.hand.destroy(); s.till = null; M.next(); });
       }
       function label(text, y, color) {
         var t = txt(s, P.x + 40, y, text, 34, { title: true, origin: [.5, .5], color: color, stroke: '#5a3412', strokeW: 8 });
@@ -3126,9 +3162,9 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
         if (!RM) { t.setScale(0); s.tweens.add({ targets: t, scale: 1, duration: 300, ease: 'Back.easeOut' }); }
         return t;
       }
-      function intoJar(obj, delay, done) {
-        if (RM) { obj.destroy(); s.wobble(); done && done(); return; }
-        s.tweens.add({ targets: obj, x: 961, y: 404, scale: obj.scale * .45, delay: delay, duration: 520, ease: 'Cubic.easeIn', onComplete: function () { obj.destroy(); s.wobble(); SFX.coin(); done && done(); } });
+      function intoJar(obj, delay, done, kinds) {
+        if (RM) { obj.destroy(); s.wobble(); s.jarAdd(kinds); done && done(); return; }
+        s.tweens.add({ targets: obj, x: 961, y: 404, scale: obj.scale * .45, delay: delay, duration: 520, ease: 'Cubic.easeIn', onComplete: function () { obj.destroy(); s.wobble(); SFX.coin(); s.jarAdd(kinds); done && done(); } });
       }
       function streakCoins() {
         var n = M.bonus / 2;
@@ -3138,7 +3174,7 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
         for (var i = 0; i < n; i++) {
           var cn = s.add.image(P.x - 20 + i * 30, P.y - 70, 'ui_coin50').setDisplaySize(42, 42);
           M.fx.add(cn);
-          intoJar(cn, 450 + i * 220, i === n - 1 ? function () { G.tips += n * 50; earn(n * 50); s.updCash(); s.time.delayedCall(D(600), end); } : null);
+          intoJar(cn, 450 + i * 220, i === n - 1 ? function () { G.tips += n * 50; earn(n * 50); s.updCash(); s.time.delayedCall(D(600), end); } : null, ['coin']);
         }
       }
       if (!cents) {
@@ -3156,8 +3192,17 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       label('+' + fmtMoney(cents) + ' tip!', P.y - 100, CREAM);
       SFX.till(e === 0 ? 5 : 2);
       if (!RM) { obj.setScale(0); this.tweens.add({ targets: obj, scale: 1, duration: 380, ease: 'Back.easeOut' }); }
-      intoJar(obj, 900, function () { G.tips += cents; earn(cents); s.updCash(); streakCoins(); });
+      intoJar(obj, 900, function () { G.tips += cents; earn(cents); s.updCash(); streakCoins(); }, e === 0 ? ['bill', 'bill', 'bill', 'bill'] : e === 1 ? ['bill', 'coin'] : ['coin']);
     },
+    // the money inside the tip jar: bills and coins piling up from the bottom (G.jar keeps them for the day)
+    jarPut: function (k, i, anim) {
+      if (i >= 30) return;
+      var row = Math.floor(i / 3), x = 944 + (i % 3) * 16 + (row % 2 ? 5 : 0) + ((i * 7) % 5 - 2), y = 464 - row * 6;
+      var im = k === 'bill' ? this.add.image(x, y, 'ui_bill1').setDisplaySize(20, 9).setAngle((i * 37) % 40 - 20) : this.add.image(x, y, 'ui_coin50').setDisplaySize(11, 11);
+      this.jarIn.add(im);
+      if (anim && !RM) { im.y -= 30; this.tweens.add({ targets: im, y: y, duration: 300, ease: 'Bounce.easeOut' }); }
+    },
+    jarAdd: function (kinds) { var s = this; if (!kinds || !this.jarIn) return; kinds.forEach(function (k) { G.jar.push(k); s.jarPut(k, G.jar.length - 1, true); }); },
     wobble: function () {
       if (!this.jar || RM) return;
       var j = this.jar;
