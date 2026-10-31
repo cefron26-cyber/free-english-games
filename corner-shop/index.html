@@ -1060,9 +1060,36 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       '<path d="M118 62 Q122 34 140 30 Q152 30 149 43 Q145 54 140 62Z" fill="' + sk + '" stroke="' + ln + '" stroke-width="3" stroke-linejoin="round"/>');
   }
 
+  // the shopkeeper's open hand (palm to us, fingers up, thumb out; reference drawing from the teacher): she holds the change in it
+  function cashierHand(sk) {
+    var ln = shade(sk, .72), dk = shade(sk, .9);
+    var parts = [
+      '<rect x="74" y="186" width="66" height="60" rx="6"/>',
+      '<rect x="36" y="44" width="28" height="92" rx="14" transform="rotate(-17 50 130)"/>',
+      '<rect x="66" y="20" width="30" height="104" rx="15" transform="rotate(-8 81 120)"/>',
+      '<rect x="100" y="8" width="30" height="110" rx="15"/>',
+      '<rect x="132" y="22" width="28" height="98" rx="14" transform="rotate(5 146 118)"/>',
+      '<rect x="150" y="104" width="27" height="80" rx="13.5" transform="rotate(50 160 172)"/>',
+      '<path d="M44 112 Q100 96 166 110 Q174 160 162 186 Q140 206 108 208 Q74 206 60 186 Q46 160 44 112Z"/>'
+    ].join('');
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 250" width="240" height="250">' +
+      '<g fill="' + ln + '" stroke="' + ln + '" stroke-width="7" stroke-linejoin="round">' + parts + '</g>' +
+      '<g fill="' + sk + '">' + parts + '</g>' +
+      // shading on the side of the palm and the wrist, crease line, highlights
+      '<path d="M150 118 Q170 150 158 184 Q146 198 128 204 Q150 170 150 118Z" fill="' + dk + '"/>' +
+      '<path d="M112 192 Q128 204 140 204 V246 H112Z" fill="' + dk + '"/>' +
+      '<path d="M64 126 Q104 112 150 118" fill="none" stroke="' + ln + '" stroke-width="3" stroke-linecap="round"/>' +
+      '<path d="M70 132 Q96 124 120 124" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="3" stroke-linecap="round"/>' +
+      '<path d="M136 166 Q150 150 168 142" fill="none" stroke="' + ln + '" stroke-width="3" stroke-linecap="round"/>' +
+      [[50, 58], [80, 34], [114, 22], [146, 36]].map(function (p) { return '<ellipse cx="' + p[0] + '" cy="' + p[1] + '" rx="6" ry="3" fill="#fff" opacity=".6" transform="rotate(-20 ' + p[0] + ' ' + p[1] + ')"/>'; }).join('') +
+      // the cuff of her striped top
+      '<rect x="66" y="222" width="82" height="28" rx="6" fill="#f3f5f7" stroke="#33465e" stroke-width="3"/><path d="M70 232 H144 M70 242 H144" stroke="#d6453a" stroke-width="3"/>' +
+      '</svg>';
+  }
+
   /* ---------------- UI icons ---------------- */
   var UI = {
-    bill1: MONEY.bill1, bill5: MONEY.bill5, bill10: MONEY.bill10, bill20: MONEY.bill20, coin50: MONEY.coin50, wad: MONEY.wad, tipJar: MONEY.tipJar,
+    bill1: MONEY.bill1, bill5: MONEY.bill5, bill10: MONEY.bill10, bill20: MONEY.bill20, coin50: MONEY.coin50, wad: MONEY.wad, tipJar: MONEY.tipJar, cashHand: cashierHand(window.CSChars.keeper.skin),
     arrowR: S(100, 100, '<path d="M20 50 H74 M52 26 L76 50 L52 74" fill="none" stroke="#fff7e8" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>'),
     arrowL: S(100, 100, '<path d="M80 50 H26 M48 26 L24 50 L48 74" fill="none" stroke="#1d3557" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>'),
     home: S(100, 100, '<path d="M14 50 L50 18 L86 50 M26 42 V84 H74 V42" fill="none" stroke="#1d3557" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>'),
@@ -2915,9 +2942,10 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       if (cash) this.time.delayedCall(D(600), function () { s.charge(res, bonus, nextStep); });
       else this.time.delayedCall(D(600), nextStep);
     },
-    // money mode: after the reaction, "Charge" opens the till. The register shows the total, the customer pays and holds
-    // out a hand, and the student puts the change on the mat (tap or drag 50¢, $1, $5 and $10 from the cash drawer).
-    // Exact change = the sale counts. Then the tip goes into the tip jar, and the streak bonus as coins
+    // money mode: after the reaction, "Charge" opens the till (red, like the register). The receipt on the left shows
+    // the basket, the total and what the customer paid; the customer holds out a hand; the shopkeeper puts the change
+    // in HER open hand (tap or drag 50¢, $1, $5 and $10 from the cash drawer) and gives it. Exact change = the sale counts.
+    // Then the tip goes into the tip jar, and the streak bonus as coins
     charge: function (res, bonus, next) {
       var s = this, total = basketTotal(G.basket);
       var b = button(this, 1110, 650, 'Charge ' + fmtMoney(total), function () { s.primary = null; b.destroy(); s.takePay(res, bonus, total, next); }, { w: 310, fill: C.mustard, size: 30 });
@@ -2928,66 +2956,81 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       var M = this.till = { total: total, paid: paid, change: paid - total, sum: 0, items: [], res: res, bonus: bonus, next: next, done: false,
         layer: this.add.container(0, 0).setDepth(46), fx: this.add.container(0, 0).setDepth(55), palm: { x: 505, y: 474 } };
       SFX.till(1);
-      // the register's display (Easy also shows the change)
-      var rows = ['Total: ' + fmtMoney(total), 'Paid: ' + fmtMoney(paid)];
-      if (G.diff === 0) rows.push('Change: ' + fmtMoney(M.change));
-      var dh = 30 + rows.length * 38, dsp = this.add.container(745, 330), g = this.add.graphics();
-      g.fillStyle(0x000000, .25); g.fillRoundedRect(-145 + 5, -dh / 2 + 7, 290, dh, 16);
-      g.fillStyle(0x2b2030, 1); g.fillRoundedRect(-145, -dh / 2, 290, dh, 16); g.lineStyle(4, C.ink, 1); g.strokeRoundedRect(-145, -dh / 2, 290, dh, 16);
-      g.fillStyle(0x7fe0a0, 1); g.fillRoundedRect(-133, -dh / 2 + 10, 266, dh - 20, 8);
-      dsp.add(g);
-      rows.forEach(function (r, i) { dsp.add(txt(s, 0, -dh / 2 + 34 + i * 38, r, 30, { title: true, origin: [.5, .5], color: i === 2 ? '#9b2c22' : '#1f4d33' })); });
-      M.fx.add(dsp);
-      if (!RM) { dsp.setScale(0); this.tweens.add({ targets: dsp, scale: 1, duration: 300, ease: 'Back.easeOut' }); }
       // the customer pays: the hand comes over the counter with the money, the money goes into the register
       this.say([{ text: 'Here\'s $' + (paid / 100) + '.' }]);
       var hand = M.hand = this.add.image(CUST_X + 40, 486, 'hand_' + c.ch.id).setDisplaySize(200, 108).setDepth(47);
       var cash = this.add.container(0, 0).setDepth(48);
       billsFor(paid).forEach(function (v, i) { cash.add(s.add.image(M.palm.x + i * 8, M.palm.y - 16 - i * 7, 'ui_bill' + v).setDisplaySize(100, 45).setAngle(-8 + i * 6)); });
       M.fx.add(cash);
-      if (RM) { hand.x = 470; cash.destroy(); this.showMat(); return; }
+      if (RM) { hand.x = 470; cash.destroy(); this.showTill(); return; }
       hand.setAlpha(0); cash.setAlpha(0); cash.x = CUST_X + 40 - 470;
       this.tweens.add({ targets: hand, x: 470, alpha: 1, duration: 420, ease: 'Back.easeOut' });
       this.tweens.add({ targets: cash, x: 0, alpha: 1, duration: 420, ease: 'Back.easeOut' });
       this.time.delayedCall(1300, function () {
         SFX.pick();
-        s.tweens.add({ targets: cash, x: 600, y: -110, scale: .5, alpha: 0, duration: 450, ease: 'Cubic.easeIn', onComplete: function () { cash.destroy(); SFX.till(1); s.showMat(); } });
+        s.tweens.add({ targets: cash, x: 600, y: -110, scale: .5, alpha: 0, duration: 450, ease: 'Cubic.easeIn', onComplete: function () { cash.destroy(); SFX.till(1); s.showTill(); } });
       });
     },
-    // the green change mat next to the hand, and the cash drawer with the money to give
-    showMat: function () {
-      var s = this, M = this.till, mx = 590, my = 478, mw = 300, mh = 236;
+    // the whole front of the counter: receipt (left), the shopkeeper's hand (middle), the red cash drawer (right)
+    showTill: function () {
+      var s = this, M = this.till, top = 478, bot = 716, RED = C.red, DARK = 0x5a1a14, SLOT = 0xa8302a;
       var g = this.add.graphics();
-      g.fillStyle(0x000000, .25); g.fillRoundedRect(mx + 5, my + 8, mw, mh, 20);
-      g.fillStyle(0x2f7a4a, 1); g.fillRoundedRect(mx, my, mw, mh, 20);
-      g.lineStyle(3, 0xbfe6c4, .6); g.strokeRoundedRect(mx + 10, my + 10, mw - 20, mh - 20, 14);
-      g.lineStyle(4, C.ink, 1); g.strokeRoundedRect(mx, my, mw, mh, 20);
-      // the cash drawer: four slots
-      var tx = 905, tw = 365;
-      g.fillStyle(0x000000, .25); g.fillRoundedRect(tx + 5, my + 8, tw, mh, 20);
-      g.fillStyle(C.woodDark, 1); g.fillRoundedRect(tx, my, tw, mh, 20);
-      g.fillStyle(0xa8692e, 1); [[911, 486, 110, 104], [1033, 486, 110, 104], [1155, 486, 109, 104], [911, 598, 110, 108]].forEach(function (r) { g.fillRoundedRect(r[0], r[1], r[2], r[3], 12); });
-      g.lineStyle(4, C.ink, 1); g.strokeRoundedRect(tx, my, tw, mh, 20);
+      function box(x, y, w, h, r) {
+        g.fillStyle(0x000000, .25); g.fillRoundedRect(x + 5, y + 8, w, h, r);
+        g.fillStyle(RED, 1); g.fillRoundedRect(x, y, w, h, r);
+        g.fillStyle(0xffffff, .16); g.fillRoundedRect(x + 12, y + 6, w - 24, 10, 5);
+        g.lineStyle(4, DARK, 1); g.strokeRoundedRect(x, y, w, h, r);
+      }
+      // receipt: the basket with prices on paper, total and paid on the green screen (Easy also shows the change)
+      box(16, top, 340, bot - top, 20);
+      g.fillStyle(C.paper, 1); g.fillRoundedRect(30, top + 14, 312, 118, 8);
+      g.fillStyle(SLOT, 1); g.fillRoundedRect(30, top + 140, 312, 84, 10);
+      g.fillStyle(0x7fe0a0, 1); g.fillRoundedRect(38, top + 146, 296, 72, 6);
+      // the shopkeeper's hand, with the change on it, and a label with how much is in it
+      // cash drawer: four slots
+      box(830, top, 442, bot - top, 20);
+      g.fillStyle(SLOT, 1);
+      [[840, top + 12, 132, 110], [984, top + 12, 132, 110], [1128, top + 12, 132, 110], [840, top + 132, 132, 96]].forEach(function (r) { g.fillRoundedRect(r[0], r[1], r[2], r[3], 12); });
       M.layer.add(g);
-      M.mx = mx; M.mat = new Phaser.Geom.Rectangle(mx, my, mw, mh);
-      M.rowY = { 1000: my + 70, 500: my + 114, 100: my + 158, 50: my + 202 };
-      M.rows = { 1000: [], 500: [], 100: [], 50: [] }; M.cnt = {};
-      M.sumT = txt(this, mx + mw / 2, my + 28, 'Change: $0.00', 28, { title: true, origin: [.5, .5], color: CREAM });
-      M.layer.add(M.sumT);
-      [1000, 500, 100, 50].forEach(function (v) { M.cnt[v] = txt(s, mx + mw - 16, M.rowY[v], '', 24, { title: true, origin: [1, .5], color: CREAM }); M.layer.add(M.cnt[v]); });
-      var DEN = [{ v: 100, key: 'ui_bill1', x: 966, y: 528, w: 100, h: 45, lab: '$1' }, { v: 500, key: 'ui_bill5', x: 1088, y: 528, w: 100, h: 45, lab: '$5' },
-        { v: 1000, key: 'ui_bill10', x: 1209, y: 528, w: 100, h: 45, lab: '$10' }, { v: 50, key: 'ui_coin50', x: 966, y: 642, w: 62, h: 62, lab: '50¢' }];
+      var list = G.basket, lh = Math.min(26, 104 / list.length), fs = lh < 22 ? 17 : 20;
+      list.forEach(function (b, i) {
+        var y = top + 28 + i * lh, name = b.n + ' ' + (b.p.one ? (b.n === 1 ? b.p.one : b.p.many) : (b.n === 1 ? b.p.cont : b.p.conts) + ' of ' + b.p.of);
+        if (b.size) name = b.n + ' ' + b.size + ' ' + (b.n === 1 ? b.p.cont : b.p.conts) + ' of ' + b.p.of;
+        var t = txt(s, 42, y, name, fs, { bold: true, origin: [0, .5] });
+        if (t.width > 216) t.setFontSize(Math.floor(fs * 216 / t.width));
+        M.layer.add([t, txt(s, 330, y, fmtMoney(priceOf(b.p, b.size) * b.n), fs, { title: true, origin: [1, .5], color: '#b5462a' })]);
+      });
+      var rows = [['Total', M.total], ['Paid', M.paid]];
+      if (G.diff === 0) rows.push(['Change', M.change]);
+      rows.forEach(function (r, i) {
+        var y = top + 182 + (i - (rows.length - 1) / 2) * (rows.length > 2 ? 22 : 28), sz = rows.length > 2 ? 21 : 26, col = i === 2 ? '#9b2c22' : '#1f4d33';
+        M.layer.add([txt(s, 52, y, r[0] + ':', sz, { title: true, origin: [0, .5], color: col }), txt(s, 320, y, fmtMoney(r[1]), sz, { title: true, origin: [1, .5], color: col })]);
+      });
+      // the shopkeeper's open hand; the change goes on her palm
+      M.cash = this.add.container(0, 0);
+      M.cash.add(this.add.image(700, bot + 12, 'ui_cashHand').setOrigin(.5, 1).setDisplaySize(200, 208));
+      M.layer.add(M.cash);
+      M.pile = { x: 694, y: 652 };
+      M.drop = new Phaser.Geom.Rectangle(580, 500, 240, 230);
+      var pill = this.add.graphics();
+      pill.fillStyle(0x000000, .25); pill.fillRoundedRect(582, top + 3, 240, 46, 23);
+      pill.fillStyle(RED, 1); pill.fillRoundedRect(578, top - 2, 240, 46, 23);
+      pill.lineStyle(4, DARK, 1); pill.strokeRoundedRect(578, top - 2, 240, 46, 23);
+      M.sumT = txt(this, 698, top + 21, 'Change: $0.00', 27, { title: true, origin: [.5, .5], color: CREAM });
+      M.layer.add([pill, M.sumT]);
+      var DEN = [{ v: 100, key: 'ui_bill1', x: 906, y: 552, w: 120, h: 54, lab: '$1' }, { v: 500, key: 'ui_bill5', x: 1050, y: 552, w: 120, h: 54, lab: '$5' },
+        { v: 1000, key: 'ui_bill10', x: 1194, y: 552, w: 120, h: 54, lab: '$10' }, { v: 50, key: 'ui_coin50', x: 906, y: 648, w: 66, h: 66, lab: '50¢' }];
       DEN.forEach(function (d) {
         // a little stack, so it looks like a drawer full of money
         for (var k = 2; k >= 1; k--) M.layer.add(s.add.image(d.x + k * 3, d.y + k * 3, d.key).setDisplaySize(d.w, d.h).setTint(0xcfcfcf));
         var im = s.add.image(d.x, d.y, d.key).setDisplaySize(d.w, d.h).setInteractive({ cursor: 'grab' });
         im.on('pointerdown', function (p) { if (!M.done) M.press = { d: d, x: p.worldX, y: p.worldY, id: p.id, ghost: null }; });
-        M.layer.add([im, txt(s, d.x, d.y + (d.v === 50 ? 46 : 40), d.lab, 22, { title: true, origin: [.5, .5], color: CREAM })]);
+        M.layer.add([im, txt(s, d.x, d.y + (d.v === 50 ? 50 : 50) - (d.v === 50 ? 2 : 6), d.lab, 22, { title: true, origin: [.5, .5], color: CREAM })]);
       });
-      M.give = button(this, 1145, 645, 'Give change', function () { s.giveChange(); }, { w: 230, h: 66, size: 28, fill: C.mustard });
+      M.give = button(this, 1124, 668, 'Give change', function () { s.giveChange(); }, { w: 262, h: 70, size: 30, fill: C.mustard });
       M.give.setEnabled(false);
       M.layer.add(M.give);
-      // drag from the drawer to the mat, or just tap
+      // drag from the drawer to her hand, or just tap
       this.input.on('pointermove', function (p) {
         var P = M.press;
         if (!P || P.id !== p.id || M.done) return;
@@ -3000,7 +3043,7 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
         M.press = null;
         if (!P.ghost) { s.addMoney(P.d, P.d.x, P.d.y); return; }
         var gx = P.ghost.x, gy = P.ghost.y; P.ghost.destroy();
-        if (M.mat.contains(gx, gy)) s.addMoney(P.d, gx, gy);
+        if (M.drop.contains(gx, gy)) s.addMoney(P.d, gx, gy);
       }
       this.input.on('pointerup', up); this.input.on('pointerupoutside', up);
       if (!RM) { M.layer.y = 260; this.tweens.add({ targets: M.layer, y: 0, duration: 380, ease: 'Back.easeOut' }); }
@@ -3009,28 +3052,27 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       var s = this, M = this.till;
       if (M.done) return;
       if (M.items.length >= 24) { SFX.nope(); return; }
-      var row = M.rows[d.v], coin = d.v === 50;
-      var im = this.add.image(fx, fy, d.key).setDisplaySize(coin ? 40 : 84, coin ? 40 : 38);
-      im.d = d; row.push(im); M.items.push(im); M.layer.add(im);
+      var coin = d.v === 50, im = this.add.image(fx, fy, d.key).setDisplaySize(coin ? 46 : 104, coin ? 46 : 47);
+      im.d = d; M.items.push(im); M.cash.add(im);
       im.setInteractive({ cursor: 'pointer' }); im.on('pointerup', function () { if (!M.done) s.takeBack(im); });
       if (coin) SFX.coin(); else SFX.pick();
-      this.layoutRow(d.v);
+      this.layoutPile();
       this.updSum();
     },
     takeBack: function (im) {
-      var M = this.till, row = M.rows[im.d.v];
-      row.splice(row.indexOf(im), 1); M.items.splice(M.items.indexOf(im), 1);
+      var M = this.till;
+      M.items.splice(M.items.indexOf(im), 1);
       im.disableInteractive();
       this.tweens.add({ targets: im, x: im.d.x, y: im.d.y, alpha: 0, duration: D(220), onComplete: function () { im.destroy(); } });
       SFX.click();
-      this.layoutRow(im.d.v);
+      this.layoutPile();
       this.updSum();
     },
-    // each kind of money has its own row on the mat, fanned out a little
-    layoutRow: function (v) {
-      var s = this, M = this.till;
-      M.rows[v].forEach(function (im, k) { s.tweens.add({ targets: im, x: M.mx + 62 + k * 14, y: M.rowY[v], angle: (k % 3) - 1, duration: D(180), ease: 'Quad.easeOut' }); });
-      M.cnt[v].setText(M.rows[v].length > 1 ? '×' + M.rows[v].length : '');
+    // the change on her palm: bills fanned out underneath, coins on top, the newest one last
+    layoutPile: function () {
+      var s = this, M = this.till, bills = M.items.filter(function (im) { return im.d.v !== 50; }), coins = M.items.filter(function (im) { return im.d.v === 50; });
+      bills.forEach(function (im, k) { s.tweens.add({ targets: im, x: M.pile.x - 14 + (k % 5) * 7, y: M.pile.y - 28 - k * 4, angle: (k % 2 ? 7 : -7) + k, duration: D(180), ease: 'Quad.easeOut' }); M.cash.bringToTop(im); });
+      coins.forEach(function (im, k) { s.tweens.add({ targets: im, x: M.pile.x - 26 + (k % 4) * 18, y: M.pile.y + 18 - Math.floor(k / 4) * 10, angle: 0, duration: D(180), ease: 'Quad.easeOut' }); M.cash.bringToTop(im); });
     },
     updSum: function () {
       var M = this.till;
@@ -3038,16 +3080,20 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       M.sumT.setText('Change: ' + fmtMoney(M.sum));
       M.give.setEnabled(M.sum > 0);
     },
-    // the change goes into the customer's hand; exact change = the sale counts
+    // she reaches over to the customer and the change goes into their hand; exact change = the sale counts
     giveChange: function () {
       var s = this, M = this.till;
       if (M.done || !M.sum) return;
       M.done = true; M.give.setEnabled(false);
-      M.items.forEach(function (im, i) {
-        im.disableInteractive();
-        s.tweens.add({ targets: im, x: M.palm.x + (i % 4) * 6 - 9, y: M.palm.y - 14 - i * 2, scale: im.scaleX * .85, delay: D(i * 50), duration: D(300), ease: 'Cubic.easeOut' });
-      });
-      this.time.delayedCall(D(380 + M.items.length * 50), function () {
+      M.items.forEach(function (im) { im.disableInteractive(); });
+      var dx = M.palm.x + 10 - M.pile.x, dy = M.palm.y + 30 - M.pile.y;
+      this.tweens.add({ targets: M.cash, x: dx, y: dy, duration: D(480), ease: 'Cubic.easeInOut', onComplete: function () {
+        // the money stays in the customer's hand while her hand goes back
+        var pile = s.add.container(0, 0);
+        M.items.forEach(function (im) { var w = im.getWorldTransformMatrix(); pile.add(s.add.image(w.tx, w.ty, im.d.key).setDisplaySize(im.displayWidth, im.displayHeight).setAngle(im.angle)); im.destroy(); });
+        M.items = []; M.fx.add(pile); M.handPile = pile;
+        SFX.pick();
+        s.tweens.add({ targets: M.cash, x: 0, y: 0, duration: D(380), ease: 'Cubic.easeOut' });
         var ok = M.sum === M.change;
         if (ok) {
           G.sales += M.total; earn(M.total);
@@ -3060,12 +3106,12 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
         }
         s.updCash();
         s.time.delayedCall(D(ok ? 1300 : 2600), function () {
-          // the mat and the drawer go away; the money in the hand goes with the customer
-          M.items.forEach(function (im) { im.destroy(); }); M.items = [];
-          if (RM) M.layer.setVisible(false); else s.tweens.add({ targets: M.layer, y: 260, alpha: 0, duration: 300, ease: 'Back.easeIn' });
+          // the till closes; the customer puts the money away
+          if (RM) { M.layer.setVisible(false); pile.destroy(); }
+          else { s.tweens.add({ targets: M.layer, y: 260, alpha: 0, duration: 300, ease: 'Back.easeIn' }); s.tweens.add({ targets: pile, alpha: 0, x: -60, duration: 300, onComplete: function () { pile.destroy(); } }); }
           s.tipJar();
         });
-      });
+      } });
     },
     // the tip appears in the customer's hand and flies into the tip jar; the streak bonus follows as coins
     tipJar: function () {
