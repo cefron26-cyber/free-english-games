@@ -4305,7 +4305,6 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       g.lineStyle(on ? 6 : 4, on ? C.ink : 0x8f887c, 1); g.strokeRoundedRect(x, y, w, h, 30); g.lineBetween(x, y + top, x + w, y + top);
       c.add(g);
       c.add(txt(this, 0, y + top / 2, m.name, 58, { title: true, color: on ? (dark ? INK : CREAM) : '#6d675d', origin: [.5, .5] }));
-      if (on) c.add(chip(this, x + w - 74, y + top / 2, '✓ ON', 0x9be3a5, { size: 24 }));
       var hy = c.hy = y + top + 166;
       if (m.ex) {
         // the flame stands behind her head
