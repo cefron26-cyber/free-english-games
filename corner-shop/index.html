@@ -158,13 +158,15 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       return F('M' + (x - 11) + ' ' + (EY - 14) + ' H' + (x + 11) + ' V' + b + ' L' + (x - 11) + ' ' + a + 'Z', sk) + L('M' + (x - 9) + ' ' + (a + (b - a) * .1) + ' L' + (x + 9) + ' ' + (b - (b - a) * .1), INK, 3) +
         (c.fem ? L('M' + (x + side * 9) + ' ' + (side < 0 ? a : b) + ' l' + (side * 4) + ' -3', INK, 2.6) : '');
     }
+    // two black stripes under each eye (war paint)
+    function warPaint() { return [LX, RX].map(function (x) { return F('M' + (x - 13) + ' 158 L' + (x + 13) + ' 160 L' + (x + 13) + ' 165 L' + (x - 13) + ' 163Z', '#2b2f36', .92) + F('M' + (x - 11) + ' 168 L' + (x + 11) + ' 170 L' + (x + 11) + ' 174 L' + (x - 11) + ' 172Z', '#2b2f36', .92); }).join(''); }
     var nose = L('M121 150 C116 158 115 162 122 163', sh(sh(sk)), 3);
     var cheeks = function (col, op, r) { return E(83, 170, r || 10, (r || 10) * .7, col, op) + E(157, 170, r || 10, (r || 10) * .7, col, op); };
     var freck = c.acc.indexOf('freckles') >= 0 ? [[78, 164], [86, 160], [84, 170], [154, 160], [162, 164], [156, 170]].map(function (p) { return C(p[0], p[1], 1.7, mix(sk, '#9a4a26', .5)); }).join('') : '';
     var old = c.acc.indexOf('old') >= 0;
     var moust = c.acc.indexOf('moustache') >= 0;
 
-    if (ex === 'happy') {
+    if (ex === 'happy' || ex === 'beam') { // beam: the same big smile with the arms down (her head on the Classic card)
       s += cheeks(cheek, .5, 11) + freck;
       s += L('M88 149 C92 138 102 138 106 149', INK, 4) + L('M134 149 C138 138 148 138 152 149', INK, 4);
       if (c.fem) s += L('M106 147 l4 -3 M134 147 l-4 -3', INK, 2.6);
@@ -175,12 +177,18 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       s += freck + dotEye(LX, -1, 3, 1) + dotEye(RX, 1, 3, 1) + lid(LX, -1, 'half') + lid(RX, 1, 'half');
       s += brow('M86 128 L108 128') + brow('M132 124 C138 120 148 120 154 124') + nose;
       s += L('M108 180 C114 177 118 180 122 179 C126 178 130 176 134 178', INK, 3.4);
-    } else if (ex === 'angry') {
+    } else if (ex === 'fierce') { // Expert card: eyes straight ahead, frowning, firm mouth and war paint under the eyes
+      s += freck + dotEye(LX, -1, 0, 1) + dotEye(RX, 1, 0, 1) + lid(LX, -1, 'angry') + lid(RX, 1, 'angry');
+      s += brow('M84 124 L109 131', 5.2) + brow('M156 124 L131 131', 5.2) + nose;
+      s += L('M107 181 C114 178 126 178 133 181', INK, 3.8);
+      s += warPaint();
+    } else if (ex === 'angry' || ex === 'fury') { // fury: angry with the war paint (the Expert card)
       s += cheeks('#ef3e3e', .45, 13) + freck + dotEye(LX, -1, 0, 1) + dotEye(RX, 1, 0, 1) + lid(LX, -1, 'angry') + lid(RX, 1, 'angry');
       s += brow('M84 122 L110 134', 5.4) + brow('M156 122 L130 134', 5.4) + nose;
       var am = 'M102 190 C104 176 136 176 138 190 C130 186 110 186 102 190Z';
       s += P(am, mouthC, 2.6) + clip(am, F('M100 176 H140 V184 H100Z', '#fff') + L('M112 176 V186 M120 176 V186 M128 176 V186', '#d9c9cc', 1.6));
       s += '<g transform="translate(166 92)">' + L('M-9 -3 Q-3 -3 -3 -9 M3 -9 Q3 -3 9 -3 M9 3 Q3 3 3 9 M-3 9 Q-3 3 -9 3', '#e23b3b', 3.8) + '</g>';
+      if (ex === 'fury') s += warPaint();
     } else if (ex === 'hello') { // waving with a big open smile
       s += cheeks(cheek, .55, 11) + freck + dotEye(LX, -1, 0) + dotEye(RX, 1, 0);
       s += brow('M86 122 C92 115 102 115 108 118') + brow('M132 118 C138 115 148 115 154 122') + nose;
@@ -383,11 +391,13 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
     return s;
   }
 
-  function character(c, ex) {
+  // onlyHead: the head alone (no neck, body or arms), cut to its own box (the mode cards)
+  function character(c, ex, onlyHead) {
     var sk = c.skin, s = '', hs = hairSet(c), pose = poseFor(ex), t = c.top;
     var longSl = ['hoodie', 'cardigan', 'shirt'].indexOf(c.topStyle) >= 0;
     var sleeve = c.topStyle === 'dress' ? t : t;
     s += hs.back;
+    if (!onlyHead) {
     s += legs(c);
     // arms behind the torso when crossed? no – arms always over torso
     s += torso(c);
@@ -399,6 +409,7 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
     // arms
     var front = pose.front, lArm = arm(pose.l, c, sleeve, longSl, pose.up === 'l' ? 'up' : pose.open && pose.open.indexOf('l') >= 0), rArm = arm(pose.r, c, sleeve === t ? sh(t) : sleeve, longSl, pose.open && pose.open.indexOf('r') >= 0);
     s += pose.over === 'l' ? rArm : front === 'l' ? rArm + lArm : lArm + rArm;
+    }
     if (hs.mid) s += hs.mid;
     // ears
     if (hs.ears) s += E(55, 146, 11, 15, sk, null, 2.6) + E(185, 146, 11, 15, sh(sk), null, 2.6) + L('M55 140 C51 146 53 152 57 154', sh(sh(sk)), 2) + L('M185 140 C189 146 187 152 183 154', sh(sh(sk)), 2);
@@ -411,10 +422,11 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
     if (hs.front) s += P(hs.front, c.hair);
     s += hs.side + hs.det;
     s += accHead(c);
-    if (pose.over === 'l') s += lArm;
+    if (pose.over === 'l' && !onlyHead) s += lArm;
     // little extras per expression
     if (ex === 'serious') s += P('M180 116 C186 125 189 130 189 135 C189 140 185 143 180 143 C175 143 171 140 171 135 C171 130 174 125 180 116Z', '#8fd0f2', 2) + C(177, 134, 2, '#fff');
     if (ex === 'happy') s += '<g fill="#ffd43b" stroke="#e0a91b" stroke-width="1.6" stroke-linejoin="round">' + [[30, 116, 1], [206, 92, .8], [226, 130, .6]].map(function (p) { return '<path transform="translate(' + p[0] + ' ' + p[1] + ') scale(' + p[2] + ')" d="M0 -12 C2 -4 4 -2 12 0 C4 2 2 4 0 12 C-2 4 -4 2 -12 0 C-4 -2 -2 -4 0 -12Z"/>'; }).join('') + '</g>';
+    if (onlyHead) return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="28 44 208 208" width="208" height="208">' + s + '</svg>';
     return S(240, 510, s);
   }
 
@@ -1128,6 +1140,12 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       line('M83 227 Q123 218 163 227', '#d6453a', 3.4) + line('M82 239 Q123 230 165 239', '#d6453a', 3.4) +      '</svg>';
   }
 
+  // a five-petal flower (100 x 100) with a dark outline like the rest of the art
+  function flower(petal, core) {
+    var s = '';
+    for (var a = 0; a < 360; a += 72) s += '<ellipse cx="50" cy="27" rx="16" ry="22" fill="' + petal + '" stroke="#1d3557" stroke-width="4" transform="rotate(' + a + ' 50 50)"/>';
+    return s + '<circle cx="50" cy="50" r="15" fill="' + core + '" stroke="#1d3557" stroke-width="4"/><circle cx="45" cy="45" r="4" fill="#fff" opacity=".7"/>';
+  }
   // the shop cat sitting up (120 x 150); lick: eyes shut and one paw up to the tongue
   function catSit(lick) {
     var o = '#7a4a1e', f = '#f0a24a', st = '#c97a2a', cr = '#fbe3c0', s = '';
@@ -1187,6 +1205,10 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
         '<path d="M24 62 Q29 66 34 62 M44 62 Q49 66 54 62" fill="none" stroke="#1d3557" stroke-width="3" stroke-linecap="round"/><path d="M36 70 H42 L39 73Z" fill="#ff8fa3"/>' +
         '<path d="M14 70 H2 M14 74 L4 78 M64 70 H76 M64 74 L74 78" stroke="' + o + '" stroke-width="1.8" stroke-linecap="round"/>';
     })()),
+    // flowers around the shopkeeper on the Classic mode card
+    flowerPink: S(100, 100, flower('#ff8fb1', '#f2c230')),
+    flowerYellow: S(100, 100, flower('#ffd43b', '#e8742c')),
+    flowerBlue: S(100, 100, flower('#7fb8f0', '#ffe066')),
     catSit: S(120, 150, catSit(false)),
     catLick: S(120, 150, catSit(true)),
     heart: S(100, 100, '<path d="M50 86 C20 66 8 48 8 32 C8 18 20 8 32 8 C40 8 46 12 50 20 C54 12 60 8 68 8 C80 8 92 18 92 32 C92 48 80 66 50 86Z" fill="#ff5c7a" stroke="#a3203a" stroke-width="5" stroke-linejoin="round"/><ellipse cx="30" cy="28" rx="9" ry="6" fill="#fff" opacity=".6" transform="rotate(-30 30 28)"/>'),
@@ -1637,6 +1659,10 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
         o.connect(bp); bp.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + .7);
       } catch (e) { }
     },
+    // the Expert flame flaring up: a short soft whoosh
+    whoosh: function () { if (!live()) return; try { burst(at(), .3, 'bandpass', 400, 1, .22, null, 1500); } catch (e) { } },
+    // switching to Classic: a soft little bell going up
+    chime: function () { [1319, 1568, 2093].forEach(function (f, i) { tone(f, .4, 'sine', .13, 0, i * .09); tone(f * 2, .2, 'sine', .03, 0, i * .09); }); },
     // a coin dropping into the tip jar
     coin: function () { tone(1900 + Math.random() * 300, .07, 'triangle', .12); tone(2650, .16, 'sine', .07, 0, .05); },
     // an achievement: a bright little arpeggio with a sparkle on top
@@ -1906,9 +1932,9 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
   }
   // shop days and listening rounds have a fixed number of customers and points
   function dayLike() { return G.mode === 'days' || G.mode === 'listen'; }
-  function leaveTo() { return G.mode === 'days' ? 'Days' : G.mode === 'listen' ? 'ListenMenu' : 'Modes'; }
+  function leaveTo() { return G.mode === 'days' ? 'Days' : G.mode === 'listen' ? 'ListenMenu' : 'Title'; }
   // where the Listening screen goes back to (the title screen or More games); More games stays open when coming back
-  var listenBack = 'Modes', moreOpen = false;
+  var listenBack = 'Title', moreOpen = false;
   function leaveMsg() { return dayLike() ? 'You will lose the points of this day.' : 'Your game will end here.'; }
   // time attack clock: real time since the first customer plus the penalties
   function runMs() { return G.t0 ? (G.tEnd || Date.now()) - G.t0 + G.wrong * PENALTY * 1000 : 0; }
@@ -2092,6 +2118,9 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
     return k;
   }
   var KEEPER_EX = ['wait', 'greet', 'happy', 'serious', 'angry', 'hello', 'blink', 'drowsy', 'heavy', 'yawn', 'sleep'];
+  // her head alone (all the hair, no neck) for the mode cards: smiling (Classic) and serious with war paint (Expert)
+  // (kp_classic2: smiling with the mouth closed; kp_expert2: angry with the war paint)
+  function portraitJobs(k) { return [['kp_classic', A.character(k, 'beam', true), 360, 360], ['kp_classic2', A.character(k, 'wait', true), 360, 360], ['kp_expert', A.character(k, 'fierce', true), 360, 360], ['kp_expert2', A.character(k, 'fury', true), 360, 360]]; }
   // SVG -> texture outside the Boot screen (replace: an existing texture with that key is swapped)
   function loadTex(scene, jobs, done) {
     var left = jobs.length;
@@ -2099,16 +2128,29 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
     jobs.forEach(function (j) {
       var img = new Image();
       img.onload = img.onerror = function () {
-        if (img.width) { if (scene.textures.exists(j[0])) scene.textures.remove(j[0]); scene.textures.addImage(j[0], img); }
+        if (img.width) swapTex(scene, j[0], img);
         if (--left === 0 && done) done();
       };
       img.src = svgURI(j[1], j[2], j[3]);
     });
   }
+  // replaces a texture in the same moment: images that show it (in any running scene) are pointed at the new one
+  // before anything is drawn, so none is left with a removed texture (crops are kept)
+  function swapTex(scene, key, img) {
+    var users = [];
+    if (scene.textures.exists(key)) {
+      scene.game.scene.getScenes(true).forEach(function (sc) {
+        (function walk(list) { list.forEach(function (o) { if (o.list) walk(o.list); if (o.texture && o.texture.key === key) users.push(o); }); })(sc.children.list);
+      });
+      scene.textures.remove(key);
+    }
+    scene.textures.addImage(key, img);
+    users.forEach(function (o) { o.setTexture(key); });
+  }
   // the shopkeeper's textures again, with the clothes she wears now
   function dressKeeper(scene, done) {
     var k = keeperLook();
-    loadTex(scene, KEEPER_EX.map(function (ex) { return ['ch_keeper_' + ex, A.character(k, ex), 300, 638]; }), done);
+    loadTex(scene, KEEPER_EX.map(function (ex) { return ['ch_keeper_' + ex, A.character(k, ex), 300, 638]; }).concat(portraitJobs(k)), done);
   }
   // black and white copy of a food (food not bought yet): an SVG filter, so it works in any WebView without shaders
   function graySvg(svg) {
@@ -2537,6 +2579,7 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       // the shopkeeper (with the clothes she wears) and her extra moods for the title screen
       var kp = keeperLook();
       KEEPER_EX.forEach(function (ex) { add('ch_keeper_' + ex, A.character(kp, ex), 300, 638); });
+      portraitJobs(kp).forEach(function (j) { add(j[0], j[1], j[2], j[3]); });
       add('bg_titleFront', A.bg.titleFront, W, H);
       add('bg_counter', A.bg.counter, W, H); add('bg_counterFront', A.bg.counterFront, W, 260); add('bg_aisle', A.bg.aisle, W, H);
       add('bg_shelf', A.bg.shelf, 1080, 340); add('bg_title', A.bg.title, W, H); add('bg_plain', A.bg.plain, W, H); add('shutter', A.bg.shutter, W, SHUT_H);
@@ -2658,7 +2701,8 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       // play
       var play = button(this, 1060, 534, 'Play', function () { go(s, 'Modes'); }, { w: 300, h: 82, fill: C.red, color: CREAM, size: 46 });
       // the Store (Listening is in More games)
-      var store = button(this, 1060, 616, 'Store', function () { go(s, 'Store', { back: 'Title' }); }, { w: 300, h: 62, fill: 0x7cbf55, size: 32, icon: 'ui_cart', iconSize: 36 });
+      var store = button(this, 970, 612, 'Store', function () { go(s, 'Store', { back: 'Title' }); }, { w: 160, h: 58, fill: 0x7cbf55, size: 28, icon: 'ui_cart', iconSize: 30 });
+      var more = button(this, 1148, 612, 'More games', function () { moreGames(s); }, { w: 186, h: 58, fill: 0x8c6bd1, color: CREAM, size: 27 });
       var words = button(this, 976, 686, 'Words', function () { go(s, 'Words'); }, { w: 160, h: 50, fill: C.mustard, size: 27 });
       var recs = button(this, 1146, 686, 'Records', function () { go(s, 'Records'); }, { w: 170, h: 50, fill: C.cream, size: 27 });
       if (!RM) this.tweens.add({ targets: play, scale: 1.06, yoyo: true, repeat: -1, duration: 650, ease: 'Sine.easeInOut' });
@@ -2668,7 +2712,12 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       roundBtn(this, W - 120, 44, 'ui_trophy', function () { go(s, 'Badges'); }, { r: 30 });
       streakBadge(this, 14, 18);
       foodHints('Title');
-      keys(this, { ENTER: function () { play.fire(); }, SPACE: function () { play.fire(); }, Q: function () { go(s, 'QuizMenu'); }, W: function () { words.fire(); }, R: function () { recs.fire(); }, A: function () { go(s, 'Badges'); }, S: function () { store.fire(); } });
+      this.more = null; this.chooser = null;
+      if (moreOpen) moreGames(this, true);
+      function pickGame(k) { if (s.more && !s.chooser) s.more.pick[k](); }
+      keys(this, { ENTER: function () { if (!s.more) play.fire(); }, SPACE: function () { if (!s.more) play.fire(); }, M: function () { more.fire(); },
+        ESC: function () { if (s.chooser) { s.chooser.destroy(); s.chooser = null; } else closeMore(s); },
+        ONE: function () { pickGame(0); }, TWO: function () { pickGame(1); }, THREE: function () { pickGame(2); }, FOUR: function () { pickGame(3); }, Q: function () { go(s, 'QuizMenu'); }, W: function () { words.fire(); }, R: function () { recs.fire(); }, A: function () { go(s, 'Badges'); }, S: function () { store.fire(); } });
     },
     // the shop cat sleeps by the crates; now and then it sits up and licks a paw. Tapped: it meows and says its name
     petCat: function () {
@@ -2858,7 +2907,7 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       mc.x = 166 + mc.w / 2;
       foodHints('Days');
       muteBtn(this, W - 46, 44);
-      txt(this, W / 2, 44, page ? 'The big shop' : 'Choose a day', 54, { title: true, color: CREAM, origin: [.5, .5], stroke: '#1d3557', strokeW: 10 });
+      txt(this, W / 2, 44, 'Choose a day', 54, { title: true, color: CREAM, origin: [.5, .5], stroke: '#1d3557', strokeW: 10 });
       diffPicker(this, 110, function () { s.scene.restart({ again: true }); });
       function setDiff(k) { if (k === diff) return; save.diff = k; persist(); s.scene.restart({ again: true }); }
       function turn(p) { if (p === daysPage || !save.big || s.party) return; SFX.slide(); s.scene.restart({ page: p, again: true }); }
@@ -2867,7 +2916,7 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
         var ex = button(this, 1020, 44, 'Expand the shop!', function () { s.expand(); }, { w: 300, h: 58, size: 28, fill: C.red, color: CREAM });
         pulse(this, ex);
       } else if (save.big) {
-        button(this, 1040, 44, page ? 'Corner shop' : 'Big shop', function () { turn(1 - page); }, { w: 250, h: 58, size: 28, fill: page ? C.cream : 0x9fd8f2 });
+        button(this, 1040, 44, page ? '← Days 1 to 4' : 'Days 5 to 8 →', function () { turn(1 - page); }, { w: 250, h: 58, size: 28, fill: page ? C.cream : 0x9fd8f2 });
       }
       DAYS.slice(first, first + 4).forEach(function (d, k) {
         var i = first + k, n = i + 1, locked = n > save.unlocked, best = save.best[bestKey(n, diff)];
@@ -4141,87 +4190,219 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
     scene.chooser = layer;
     return layer;
   }
-  // a tall mode card: coloured top with the name, pictures, what it is, and a line at the bottom
-  function modeCard(scene, x, y, w, h, color, title, sub, info, pics, onTap, delay, mark) {
-    var c = scene.add.container(0, 0), g = scene.add.graphics(), top = 84, dark = color === C.mustard;
-    g.fillStyle(0x000000, .25); g.fillRoundedRect(x + 6, y + 10, w, h, 30);
-    g.fillStyle(C.paper, 1); g.fillRoundedRect(x, y, w, h, 30);
-    g.fillStyle(color, 1); g.fillRoundedRect(x, y, w, top, { tl: 30, tr: 30, bl: 0, br: 0 });
-    g.lineStyle(5, C.ink, 1); g.strokeRoundedRect(x, y, w, h, 30); g.lineBetween(x, y + top, x + w, y + top);
-    c.add(g);
-    c.add(txt(scene, x + w / 2, y + top / 2, title, 52, { title: true, color: dark ? INK : CREAM, origin: [.5, .5] }));
-    pics.forEach(function (p, k) {
-      var im = scene.add.image(x + w / 2 + (k - 1) * 112, y + top + 110 + (k === 1 ? -12 : 0), p.indexOf('ui_') === 0 ? p : 'f_' + p);
-      var sz = 128, r = im.width / im.height;
-      im.setDisplaySize(r >= 1 ? sz : sz * r, r >= 1 ? sz / r : sz).setAngle((k - 1) * 9);
-      c.add(im);
-    });
-    c.add(txt(scene, x + w / 2, y + top + 236, sub, 32, { bold: true, wrap: w - 50, align: 'center', origin: [.5, 0], lineSpacing: 6 }));
-    c.add(txt(scene, x + w / 2, y + h - 44, info, 30, { title: true, origin: [.5, .5], color: '#b5462a' }));
-    if (mark) c.add(chip(scene, x + w / 2, y + h - 100, '✓ Last time', 0x9be3a5, { size: 22 }));
-    var zone = scene.add.zone(x, y, w, h).setOrigin(0).setInteractive({ cursor: 'pointer' });
-    c.add(zone);
-    zone.on('pointerdown', function () { c.y = 4; });
-    zone.on('pointerout', function () { c.y = 0; });
-    zone.on('pointerup', function () { c.y = 0; SFX.click(); onTap(); });
-    if (!RM && delay != null) { c.y = 30; c.alpha = 0; scene.tweens.add({ targets: c, y: 0, alpha: 1, delay: delay, duration: 300, ease: 'Back.easeOut' }); }
-    return c;
+  // More games (Quiz, Listening, Endless, Time Attack: no money) over the title screen.
+  // It opens again when coming back from one of those games (moreOpen)
+  function moreGames(s, now) {
+    if (s.more) return;
+    var layer = s.more = s.add.container(0, 0).setDepth(900);
+    moreOpen = true;
+    var dim = s.add.rectangle(W / 2, H / 2, W, H + 2 * BAND, 0x000000, .5).setInteractive();
+    dim.on('pointerup', function () { closeMore(s); });
+    layer.add([dim, panel(s, 40, 84, 1200, 616, C.paper, { r: 30 })]);
+    layer.add(txt(s, W / 2, 128, 'More games', 48, { title: true, origin: [.5, .5] }));
+    layer.add(roundBtn(s, 96, 128, 'ui_back', function () { closeMore(s); }, { r: 30 }));
+    var bestE = rankList('endless')[0];
+    function time() {
+      diffChooser(s, 'Time Attack', ['1 or 2 things, aisle hints', '2 things, with sizes', '3 things, "no ..." and changes'], function (k) { var b = rankList('t5-' + k)[0]; return b ? fmtTime(b.v) + ' (' + b.name + ')' : null; }, function () { startRun(s, 'time'); });
+    }
+    var games = [
+      [C.ink, 'Quiz', 'Read the list. Pick the right basket!', '5 questions', ['carrot', 'cheese', 'rice'], function () { go(s, 'QuizMenu'); }],
+      [0x8c6bd1, 'Listening', 'No words to read. Listen carefully!', 'Easy, Medium or Hard', ['apple', 'egg', 'juice'], function () { listenBack = 'Title'; go(s, 'ListenMenu'); }],
+      [0xd9822b, 'Endless', 'One mistake and the game is over!', bestE ? 'Best: ' + rankFmt('endless', bestE.v) + ' (' + bestE.name + ')' : 'It gets harder and harder', ['banana', 'egg', 'cereal'], function () { startRun(s, 'endless'); }],
+      [0x2a9d9a, 'Time Attack', 'Serve ' + TIME_N + ' orders. Be fast!', 'A mistake: +' + PENALTY + ' seconds', ['water', 'juice', 'soda'], time]
+    ];
+    layer.pick = games.map(function (d) { return d[5]; });
+    games.forEach(function (d, i) { layer.add(card(s, 70 + (i % 2) * 580, 166 + Math.floor(i / 2) * 264, 560, 248, d[0], d[1], d[2], d[3], d[4], d[5], now ? null : 60 + i * 60)); });
+    if (!RM && !now) { layer.setAlpha(0); s.tweens.add({ targets: layer, alpha: 1, duration: 160 }); }
   }
-  // Classic (the original shop days: no money, everything open), Expert (money: charge, give change, save and
-  // buy food and things for the shop in the Store) and More games (Quiz, Listening, Endless, Time Attack: no money)
+  function closeMore(s) { if (s.more) { s.more.destroy(); s.more = null; } moreOpen = false; }
+  // dashes around a rectangle (the mode that is off, ready to be switched on)
+  function dashRect(g, x, y, w, h, d, gap) {
+    [[x, y, 1, 0, w], [x + w, y, 0, 1, h], [x + w, y + h, -1, 0, w], [x, y + h, 0, -1, h]].forEach(function (e) {
+      for (var t = 0; t < e[4]; t += d + gap) { var t2 = Math.min(e[4], t + d); g.lineBetween(e[0] + e[2] * t, e[1] + e[3] * t, e[0] + e[2] * t2, e[1] + e[3] * t2); }
+    });
+  }
+  // Classic (the original shop days: no money, everything open) and Expert (money: charge, give change, save and
+  // buy things in the Store) work like a switch: the mode that is on has its colours, a gold frame, "✓ ON" and Play;
+  // the other one is grey in a dashed frame ("Tap to switch"). Each card shows the shopkeeper's head: smiling among
+  // flowers (Classic) or serious with war paint and a flame behind her (Expert). Switching flips the cards:
+  // the flowers dance with a little bell, or the flame lights up
+  var MODES = [
+    { ex: false, color: C.red, name: 'Classic', sub: 'The shop days. No money: all the food is free.' },
+    { ex: true, color: C.mustard, name: 'Expert', sub: 'Charge and give the change. Save money and buy things!' }
+  ];
   var Modes = new Phaser.Class({
     Extends: Phaser.Scene,
     initialize: function Modes() { Phaser.Scene.call(this, { key: 'Modes' }); },
     create: function () {
       var s = this;
       this.cameras.main.fadeIn(D(250));
-      this.more = null; this.chooser = null;
+      this.flipping = false; this.cards = [];
       bgImg(this, 'bg_plain');
       roundBtn(this, 46, 44, 'ui_back', function () { go(s, 'Title'); }, { r: 30 });
       muteBtn(this, W - 46, 44);
       txt(this, W / 2, 46, 'Choose a mode', 56, { title: true, color: CREAM, origin: [.5, .5], stroke: '#1d3557', strokeW: 10 });
-      function pickMode(ex) { if (save.expert !== ex) { save.expert = ex; persist(); dressKeeper(s); } moreOpen = false; go(s, 'Days'); }
-      var days = 'Days open: ' + save.unlocked + ' of ' + (save.big ? DAYS.length : 4);
-      var cards = [
-        [C.red, 'Classic', 'The shop days. No money: all the food is free.', days, ['apple', 'milk', 'tuna'], function () { pickMode(false); }, !save.expert],
-        [C.mustard, 'Expert', 'Charge and give the change. Save money and buy things!', 'Saved: ' + fmtMoney(save.money || 0), ['ui_coin50', 'ui_wad', 'ui_cart'], function () { pickMode(true); }, save.expert],
-        [0x8c6bd1, 'More games', 'Quiz, Listening, Endless and Time Attack.', '4 games', ['banana', 'ui_speaker', 'cereal'], function () { s.openMore(); }, false]
-      ];
-      cards.forEach(function (d, i) { modeCard(s, 34 + i * 412, 112, 388, 572, d[0], d[1], d[2], d[3], d[4], d[5], i * 70, d[6]); });
+      MODES.forEach(function (m, i) { s.cards[i] = s.modeCard(i); if (!RM) { var c = s.cards[i]; c.y += 30; c.alpha = 0; s.tweens.add({ targets: c, y: c.y - 30, alpha: 1, delay: i * 80, duration: 300, ease: 'Back.easeOut' }); } });
+      function tap(i) { if (MODES[i].ex === !!save.expert) s.play(); else s.flip(); }
       keys(this, {
-        ESC: function () { if (s.chooser) { s.chooser.destroy(); s.chooser = null; } else if (s.more) s.closeMore(); else go(s, 'Title'); },
-        ONE: function () { if (s.chooser) return; if (s.more) s.more.pick[0](); else pickMode(false); },
-        TWO: function () { if (s.chooser) return; if (s.more) s.more.pick[1](); else pickMode(true); },
-        THREE: function () { if (s.chooser) return; if (s.more) s.more.pick[2](); else s.openMore(); },
-        FOUR: function () { if (s.more && !s.chooser) s.more.pick[3](); }
+        ESC: function () { go(s, 'Title'); }, ENTER: function () { s.play(); }, SPACE: function () { s.play(); },
+        ONE: function () { tap(0); }, TWO: function () { tap(1); }, LEFT: function () { if (save.expert) s.flip(); }, RIGHT: function () { if (!save.expert) s.flip(); }
       });
-      // back from one of the games: More games is open again
-      if (moreOpen) this.openMore(true);
     },
-    openMore: function (now) {
-      if (this.more) return;
-      var s = this, layer = this.more = this.add.container(0, 0).setDepth(900);
-      moreOpen = true;
-      var dim = this.add.rectangle(W / 2, H / 2, W, H + 2 * BAND, 0x000000, .5).setInteractive();
-      dim.on('pointerup', function () { s.closeMore(); });
-      layer.add([dim, panel(this, 40, 84, 1200, 616, C.paper, { r: 30 })]);
-      layer.add(txt(this, W / 2, 128, 'More games', 48, { title: true, origin: [.5, .5] }));
-      layer.add(roundBtn(this, 96, 128, 'ui_back', function () { s.closeMore(); }, { r: 30 }));
-      var bestE = rankList('endless')[0];
-      function time() {
-        diffChooser(s, 'Time Attack', ['1 or 2 things, aisle hints', '2 things, with sizes', '3 things, "no ..." and changes'], function (k) { var b = rankList('t5-' + k)[0]; return b ? fmtTime(b.v) + ' (' + b.name + ')' : null; }, function () { startRun(s, 'time'); });
+    // Play: the flowers dance (or the flame flares up) and then the Days screen opens
+    play: function () {
+      if (this.flipping) return;
+      var s = this, c = this.cards[save.expert ? 1 : 0];
+      this.flipping = true;
+      if (save.expert) this.flare(c); else this.dance(c);
+      this.time.delayedCall(D(450), function () { go(s, 'Days'); });
+    },
+    dance: function (c) {
+      SFX.chime();
+      if (RM || !c.flowers) return;
+      var s = this;
+      c.flowers.forEach(function (f, k) {
+        var h = f.home;
+        // a quick spin outwards and back, with sparkles flying out of each flower
+        if (f.spin) f.spin.timeScale = 6;
+        s.tweens.add({ targets: f, x: h.x * 1.12, y: c.hy + (h.y - c.hy) * 1.1, scale: h.sc * 1.4, duration: 340, delay: k * 40, ease: 'Back.easeOut', yoyo: true, hold: 120, onComplete: function () { if (f.spin) f.spin.timeScale = 1; } });
+        s.time.delayedCall(k * 40 + 200, function () { s.sparkles(c, f, 8); });
+      });
+      this.tweens.add({ targets: [c.head, c.head2], y: c.hy - 14, yoyo: true, duration: 180, repeat: 1, ease: 'Sine.easeInOut' });
+    },
+    sparkles: function (c, f, n) {
+      var m = c.getWorldTransformMatrix(), em = this.add.particles(m.tx + f.x * c.scaleX, m.ty + f.y, 'ui_star', { speed: { min: 80, max: 210 }, lifespan: 650, scale: { start: .13, end: 0 }, rotate: { min: 0, max: 360 }, tint: [0xffffff, 0xffe066, 0xff8fb1], emitting: false }).setDepth(50);
+      em.explode(n);
+      this.time.delayedCall(800, function () { em.destroy(); });
+    },
+    // the Expert flame lights up behind her (from nothing, with a whoosh) and keeps flickering
+    flare: function (c, light) {
+      SFX.ignite();
+      if (RM || !c.flame) return;
+      var fl = c.flame;
+      if (light) {
+        fl.setScale(0);
+        this.tweens.add({ targets: fl, scale: fl.base, duration: 520, delay: 160, ease: 'Back.easeOut', onComplete: function () { c.flicker(); } });
+      } else this.tweens.add({ targets: fl, scaleX: fl.base * 1.1, scaleY: fl.base * 1.12, yoyo: true, duration: 180 });
+      this.cameras.main.shake(160, .004);
+    },
+    modeCard: function (i) {
+      var s = this, m = MODES[i], on = m.ex === !!save.expert, w = 540, h = 560, cx = 340 + i * 600, cy = 404, x = -w / 2, y = -h / 2, top = 90;
+      var c = this.add.container(cx, cy), g = this.add.graphics(), dark = m.color === C.mustard;
+      if (on) {
+        var glow = this.add.graphics();
+        glow.lineStyle(14, 0xffd166, .9); glow.strokeRoundedRect(x - 12, y - 12, w + 24, h + 24, 40);
+        c.add(glow);
+        if (!RM) this.tweens.add({ targets: glow, alpha: .35, yoyo: true, repeat: -1, duration: 700, ease: 'Sine.easeInOut' });
+      } else {
+        var dash = this.add.graphics();
+        dash.lineStyle(5, 0xfff7e8, .95); dashRect(dash, x - 16, y - 16, w + 32, h + 32, 22, 14);
+        c.add(dash);
       }
-      var games = [
-        [C.ink, 'Quiz', 'Read the list. Pick the right basket!', '5 questions', ['carrot', 'cheese', 'rice'], function () { go(s, 'QuizMenu'); }],
-        [0x8c6bd1, 'Listening', 'No words to read. Listen carefully!', 'Easy, Medium or Hard', ['apple', 'egg', 'juice'], function () { listenBack = 'Modes'; go(s, 'ListenMenu'); }],
-        [0xd9822b, 'Endless', 'One mistake and the game is over!', bestE ? 'Best: ' + rankFmt('endless', bestE.v) + ' (' + bestE.name + ')' : 'It gets harder and harder', ['banana', 'egg', 'cereal'], function () { startRun(s, 'endless'); }],
-        [0x2a9d9a, 'Time Attack', 'Serve ' + TIME_N + ' orders. Be fast!', 'A mistake: +' + PENALTY + ' seconds', ['water', 'juice', 'soda'], time]
-      ];
-      layer.pick = games.map(function (d) { return d[5]; });
-      games.forEach(function (d, i) { layer.add(card(s, 70 + (i % 2) * 580, 166 + Math.floor(i / 2) * 264, 560, 248, d[0], d[1], d[2], d[3], d[4], d[5], now ? null : 60 + i * 60)); });
-      if (!RM && !now) { layer.setAlpha(0); this.tweens.add({ targets: layer, alpha: 1, duration: 160 }); }
+      g.fillStyle(0x000000, .25); g.fillRoundedRect(x + 6, y + 10, w, h, 30);
+      g.fillStyle(on ? C.paper : 0xe3dbcc, 1); g.fillRoundedRect(x, y, w, h, 30);
+      g.fillStyle(on ? m.color : 0xb9b2a5, 1); g.fillRoundedRect(x, y, w, top, { tl: 30, tr: 30, bl: 0, br: 0 });
+      g.lineStyle(on ? 6 : 4, on ? C.ink : 0x8f887c, 1); g.strokeRoundedRect(x, y, w, h, 30); g.lineBetween(x, y + top, x + w, y + top);
+      c.add(g);
+      c.add(txt(this, 0, y + top / 2, m.name, 58, { title: true, color: on ? (dark ? INK : CREAM) : '#6d675d', origin: [.5, .5] }));
+      if (on) c.add(chip(this, x + w - 74, y + top / 2, '✓ ON', 0x9be3a5, { size: 24 }));
+      var hy = c.hy = y + top + 166;
+      if (m.ex) {
+        // the flame stands behind her head
+        // the flame stands behind her head and never goes lower than her chin
+        var fl = c.flame = this.add.image(4, hy + 44, on ? 'ui_flame' : 'ui_flameOff').setOrigin(.5, 1).setDisplaySize(172, 192);
+        fl.base = fl.scaleX;
+        if (!on) fl.setAlpha(.6);
+        c.addAt(fl, c.list.indexOf(g) + 1); // over the card, under the name
+        // flickering, and every moment she goes from serious to angry: the flame flares up with her
+        c.flicker = function () {
+          if (RM) return;
+          c.fk = s.tweens.add({ targets: fl, scaleY: fl.base * 1.06, scaleX: fl.base * .96, yoyo: true, repeat: -1, duration: 220, ease: 'Sine.easeInOut' });
+          c.mood = s.time.addEvent({ delay: 1500, loop: true, callback: function () {
+            var mad = !c.other;
+            c.swapFace(mad ? 220 : 380);
+            if (c.fk) c.fk.stop();
+            s.tweens.add({ targets: fl, scaleX: fl.base * (mad ? 1.1 : 1), scaleY: fl.base * (mad ? 1.12 : 1), duration: mad ? 280 : 420, ease: mad ? 'Back.easeOut' : 'Sine.easeInOut', onComplete: function () {
+              c.fk = s.tweens.add({ targets: fl, scaleY: fl.scaleY * 1.06, scaleX: fl.scaleX * .96, yoyo: true, repeat: -1, duration: 220, ease: 'Sine.easeInOut' });
+            } });
+            if (mad) { s.tweens.add({ targets: [c.head, c.head2], x: 12, yoyo: true, repeat: 3, duration: 50, ease: 'Sine.easeInOut' }); SFX.whoosh(); }
+          } });
+          c.once('destroy', function () { if (c.mood) c.mood.remove(); });
+        };
+        if (on && !this.lighting) c.flicker();
+      } else {
+        // flowers of different sizes close around her face: [x, y, size]
+        c.flowers = [[-110, -42, 50], [-126, 10, 36], [-100, 54, 54], [-80, -72, 32], [96, -52, 42], [120, 6, 56], [96, 58, 38], [78, -76, 30]].map(function (p, k) {
+          var f = s.add.image(p[0], hy + p[1], ['ui_flowerPink', 'ui_flowerYellow', 'ui_flowerBlue'][k % 3]).setDisplaySize(p[2], p[2]).setAngle(k * 25);
+          f.home = { x: f.x, y: f.y, a: f.angle, sc: f.scaleX };
+          if (!on) f.setTint(0x9c968c).setAlpha(.55);
+          else if (!RM) f.spin = s.tweens.add({ targets: f, angle: f.angle + (k % 2 ? -360 : 360), repeat: -1, duration: 5200 + k * 400 });
+          c.add(f);
+          return f;
+        });
+      }
+      var hd = c.head = this.add.image(8, hy, m.ex ? 'kp_expert' : 'kp_classic').setDisplaySize(180, 180);
+      if (!on) hd.setTint(0x9c968c).setAlpha(.75);
+      c.add(hd);
+      // her other face, laid on top and faded in and out (smiling <-> laughing, serious <-> angry)
+      var hd2 = c.head2 = this.add.image(8, hy, m.ex ? 'kp_expert2' : 'kp_classic2').setDisplaySize(180, 180).setAlpha(0);
+      c.add(hd2);
+      c.other = false;
+      c.swapFace = function (dur) { c.other = !c.other; s.tweens.add({ targets: hd2, alpha: c.other ? 1 : 0, duration: dur, ease: 'Sine.easeInOut' }); };
+      // Classic: a closed-mouth smile and then a big laugh, again and again; the flowers jump and sparkle with the laugh
+      if (!m.ex && on && !RM) {
+        hd2.setAlpha(1); c.other = true;
+        c.mood = this.time.addEvent({ delay: 1600, loop: true, callback: function () {
+          var laugh = c.other;
+          c.swapFace(260);
+          if (!laugh) return;
+          s.tweens.add({ targets: [hd, hd2], y: hy - 8, yoyo: true, duration: 260, ease: 'Sine.easeInOut' });
+          c.flowers.forEach(function (f) { s.tweens.add({ targets: f, scale: f.home.sc * 1.2, yoyo: true, duration: 300, ease: 'Sine.easeInOut' }); });
+          [c.flowers[Math.floor(Math.random() * 4)], c.flowers[4 + Math.floor(Math.random() * 4)]].forEach(function (f) { s.sparkles(c, f, 5); });
+        } });
+        c.once('destroy', function () { if (c.mood) c.mood.remove(); });
+      }
+      c.add(txt(this, 0, y + top + 258, m.sub, 28, { bold: true, wrap: w - 60, align: 'center', origin: [.5, 0], lineSpacing: 4, color: on ? INK : '#7d7a74' }));
+      var info = txt(this, 0, y + h - 110, m.ex ? 'Saved: ' + fmtMoney(save.money || 0) : 'Days open: ' + save.unlocked + ' of ' + (save.big ? DAYS.length : 4), 30, { title: true, origin: [.5, .5], color: on ? '#b5462a' : '#8f887c' });
+      c.add(info); c.info = info;
+      // the whole card: Play when it is on, switch when it is off
+      var zone = this.add.zone(x, y, w, h).setOrigin(0).setInteractive({ cursor: 'pointer' });
+      zone.on('pointerup', function () { if (s.flipping) return; SFX.click(); if (on) s.play(); else s.flip(); });
+      c.add(zone);
+      if (on) {
+        var b = button(this, 0, y + h - 48, 'Play ▶', function () { s.play(); }, { w: 280, h: 64, size: 38, fill: m.color, color: dark ? INK : CREAM });
+        c.add(b); pulse(this, b);
+      } else {
+        var t = txt(this, 0, y + h - 48, 'Tap to switch', 36, { title: true, origin: [.5, .5], color: '#5d6470' });
+        c.add(t);
+        if (!RM) this.tweens.add({ targets: t, scale: 1.08, yoyo: true, repeat: -1, duration: 600, ease: 'Sine.easeInOut' });
+      }
+      return c;
     },
-    closeMore: function () { if (this.more) { this.more.destroy(); this.more = null; } moreOpen = false; }
+    // Classic <-> Expert: both cards turn over like playing cards; Expert rings the till and throws coins,
+    // Classic rings a little bell and throws fruit
+    flip: function () {
+      if (this.flipping) return;
+      var s = this, ex = !save.expert;
+      this.flipping = true;
+      save.expert = ex; persist(); dressKeeper(this);
+      function rebuild() {
+        s.cards.forEach(function (c) { c.destroy(); });
+        s.lighting = ex;
+        s.cards = MODES.map(function (m, i) { return s.modeCard(i); });
+        s.lighting = false;
+        var winner = s.cards[ex ? 1 : 0];
+        if (ex) s.flare(winner, true); else s.time.delayedCall(D(200), function () { s.dance(winner); });
+        if (RM) { s.flipping = false; return; }
+        if (ex) s.tweens.add({ targets: winner.info, scale: 1.3, yoyo: true, duration: 180, repeat: 1 });
+        s.cards.forEach(function (c) { c.scaleX = 0; });
+        s.tweens.add({ targets: s.cards, scaleX: 1, duration: 300, ease: 'Back.easeOut', onComplete: function () { s.flipping = false; } });
+        s.tweens.add({ targets: winner, y: winner.y - 16, yoyo: true, duration: 160, delay: 200 });
+      }
+      if (RM) { rebuild(); return; }
+      SFX.slide();
+      this.tweens.add({ targets: this.cards, scaleX: 0, duration: 180, ease: 'Cubic.easeIn', onComplete: rebuild });
+    }
   });
 
   // listening mode: chosen from the title screen; the customers only speak, there are no words
@@ -4358,7 +4539,7 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       this.cameras.main.fadeIn(D(250));
       bgImg(this, 'bg_plain');
       roundBtn(this, 46, 44, 'ui_home', function () { go(s, 'Title'); }, { r: 30 });
-      roundBtn(this, 120, 44, 'ui_back', function () { go(s, 'Modes'); }, { r: 30 });
+      roundBtn(this, 120, 44, 'ui_back', function () { go(s, 'Title'); }, { r: 30 });
       muteBtn(this, W - 46, 44);
       // result card
       var x = 70, y = 90, w = 580, h = 480, g = this.add.graphics();
@@ -4394,7 +4575,7 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       });
       keys(this, {
         ENTER: function () { if (!s.naming && !s.reviewing) s.primary.fire(); },
-        ESC: function () { if (s.naming) return; if (s.reviewing) { s.reviewing.destroy(); s.reviewing = null; } else go(s, 'Modes'); }
+        ESC: function () { if (s.naming) return; if (s.reviewing) { s.reviewing.destroy(); s.reviewing = null; } else go(s, 'Title'); }
       });
     }
   });
@@ -4414,7 +4595,7 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
         var b = rankBoard(s, 26 + i * 310, 136, 290, 460, r, -1);
         if (!RM) { b.y = 30; b.alpha = 0; s.tweens.add({ targets: b, y: 0, alpha: 1, delay: i * 80, duration: 300, ease: 'Back.easeOut' }); }
       });
-      var play = button(this, W / 2, 662, 'Play', function () { go(s, 'Modes'); }, { w: 280, fill: C.red, color: CREAM });
+      var play = button(this, W / 2, 662, 'Play', function () { moreOpen = true; go(s, 'Title'); }, { w: 280, fill: C.red, color: CREAM });
       keys(this, { ESC: function () { go(s, 'Title'); }, ENTER: function () { play.fire(); } });
     }
   });
@@ -4593,7 +4774,7 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       var s = this, diff = curDiff(), again = data && data.again;
       if (!again) this.cameras.main.fadeIn(D(250));
       bgImg(this, 'bg_plain');
-      roundBtn(this, 46, 44, 'ui_back', function () { go(s, 'Modes'); }, { r: 30 });
+      roundBtn(this, 46, 44, 'ui_back', function () { go(s, 'Title'); }, { r: 30 });
       muteBtn(this, W - 46, 44);
       txt(this, W / 2, 46, 'Quiz mode', 56, { title: true, color: CREAM, origin: [.5, .5], stroke: '#1d3557', strokeW: 10 });
       txt(this, W / 2, 96, 'Read the list. Choose the right basket: A, B, C or D.', 26, { bold: true, color: CREAM, origin: [.5, .5], stroke: '#1d3557', strokeW: 6 });
@@ -4623,7 +4804,7 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
         if (!RM && !again) { c.y = 30; c.alpha = 0; s.tweens.add({ targets: c, y: 0, alpha: 1, delay: i * 70, duration: 300, ease: 'Back.easeOut' }); }
       });
       keys(this, {
-        ESC: function () { go(s, 'Modes'); }, ONE: function () { startQuiz(s, 0); }, TWO: function () { startQuiz(s, 1); }, THREE: function () { startQuiz(s, 2); }, FOUR: function () { startQuiz(s, 3); },
+        ESC: function () { go(s, 'Title'); }, ONE: function () { startQuiz(s, 0); }, TWO: function () { startQuiz(s, 1); }, THREE: function () { startQuiz(s, 2); }, FOUR: function () { startQuiz(s, 3); },
         E: function () { setDiff(0); }, M: function () { setDiff(1); }, H: function () { setDiff(2); }
       });
     }
