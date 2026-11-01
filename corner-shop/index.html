@@ -1908,7 +1908,7 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
   function dayLike() { return G.mode === 'days' || G.mode === 'listen'; }
   function leaveTo() { return G.mode === 'days' ? 'Days' : G.mode === 'listen' ? 'ListenMenu' : 'Modes'; }
   // where the Listening screen goes back to (the title screen or More games); More games stays open when coming back
-  var listenBack = 'Title', moreOpen = false;
+  var listenBack = 'Modes', moreOpen = false;
   function leaveMsg() { return dayLike() ? 'You will lose the points of this day.' : 'Your game will end here.'; }
   // time attack clock: real time since the first customer plus the penalties
   function runMs() { return G.t0 ? (G.tEnd || Date.now()) - G.t0 + G.wrong * PENALTY * 1000 : 0; }
@@ -2657,7 +2657,8 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       this.blink();
       // play
       var play = button(this, 1060, 534, 'Play', function () { go(s, 'Modes'); }, { w: 300, h: 82, fill: C.red, color: CREAM, size: 46 });
-      var listen = button(this, 1060, 616, 'Listening', function () { listenBack = 'Title'; go(s, 'ListenMenu'); }, { w: 300, h: 62, fill: 0x8c6bd1, color: CREAM, size: 32, icon: 'ui_speaker', iconSize: 32 });
+      // the Store (Listening is in More games)
+      var store = button(this, 1060, 616, 'Store', function () { go(s, 'Store', { back: 'Title' }); }, { w: 300, h: 62, fill: 0x7cbf55, size: 32, icon: 'ui_cart', iconSize: 36 });
       var words = button(this, 976, 686, 'Words', function () { go(s, 'Words'); }, { w: 160, h: 50, fill: C.mustard, size: 27 });
       var recs = button(this, 1146, 686, 'Records', function () { go(s, 'Records'); }, { w: 170, h: 50, fill: C.cream, size: 27 });
       if (!RM) this.tweens.add({ targets: play, scale: 1.06, yoyo: true, repeat: -1, duration: 650, ease: 'Sine.easeInOut' });
@@ -2665,10 +2666,9 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       // achievements (gold cup) next to the sound button, and the daily streak in the top left corner
       checkAch(true);
       roundBtn(this, W - 120, 44, 'ui_trophy', function () { go(s, 'Badges'); }, { r: 30 });
-      roundBtn(this, W - 194, 44, 'ui_cart', function () { go(s, 'Store', { back: 'Title' }); }, { r: 30 });
       streakBadge(this, 14, 18);
       foodHints('Title');
-      keys(this, { ENTER: function () { play.fire(); }, SPACE: function () { play.fire(); }, Q: function () { go(s, 'QuizMenu'); }, L: function () { listen.fire(); }, W: function () { words.fire(); }, R: function () { recs.fire(); }, A: function () { go(s, 'Badges'); }, S: function () { go(s, 'Store', { back: 'Title' }); } });
+      keys(this, { ENTER: function () { play.fire(); }, SPACE: function () { play.fire(); }, Q: function () { go(s, 'QuizMenu'); }, W: function () { words.fire(); }, R: function () { recs.fire(); }, A: function () { go(s, 'Badges'); }, S: function () { store.fire(); } });
     },
     // the shop cat sleeps by the crates; now and then it sits up and licks a paw. Tapped: it meows and says its name
     petCat: function () {
