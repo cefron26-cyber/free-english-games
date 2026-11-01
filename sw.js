@@ -2,7 +2,7 @@
 // Cada archivo se guarda con su huella: al subir cambios solo se vuelve a bajar lo que cambió.
 const ARCHIVOS = {
  "avatar.png": "b39dc88299",
- "corner-shop/index.html": "5040b10fdb",
+ "corner-shop/index.html": "558afc5187",
  "estilos.css": "dc9fe293e6",
  "face-maker/index.html": "3570214b0e",
  "fuentes/fredoka-latin-600-normal.woff2": "b9fca786c0",
