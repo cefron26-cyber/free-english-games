@@ -629,10 +629,15 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       '<rect x="80" y="86" width="32" height="18" rx="4" fill="#fff8ec" stroke="#d6453a" stroke-width="2.5"/>' +
       '<path d="M85 92 H106 M85 98 H98" stroke="#1d3557" stroke-width="2.2" stroke-linecap="round" opacity=".7"/>';
   }
-  C.sausages = S(128, 128, tray([[24, 56, -4], [22, 68, 3], [26, 80, -2], [24, 92, 4]].map(function (q) {
-    return '<g transform="rotate(' + q[2] + ' 64 ' + (q[1] + 6) + ')"><rect x="' + q[0] + '" y="' + q[1] + '" width="80" height="13" rx="6.5" fill="#b9522f"/>' +
-      '<path d="M' + (q[0] + 8) + ' ' + (q[1] + 4) + ' H' + (q[0] + 70) + '" stroke="#e8896a" stroke-width="3" stroke-linecap="round"/>' +
-      '<circle cx="' + q[0] + '" cy="' + (q[1] + 6.5) + '" r="2.4" fill="#8a3a1f"/><circle cx="' + (q[0] + 80) + '" cy="' + (q[1] + 6.5) + '" r="2.4" fill="#8a3a1f"/></g>';
+  // three plump sausages, curved, lying apart so the tray shows between them: dark outline, a shadow along the bottom,
+  // a shine along the top and a little tied knot at each end
+  C.sausages = S(128, 128, tray([[60, -9, 0], [78, -8, 3], [96, -9, -2]].map(function (q) {
+    var y = q[0], b = q[1], x0 = 30 + q[2], x1 = 96 + q[2], d = 'M' + x0 + ' ' + y + ' Q' + (x0 + x1) / 2 + ' ' + (y + b * 2) + ' ' + x1 + ' ' + y;
+    return '<path d="' + d + '" fill="none" stroke="#6e2416" stroke-width="20" stroke-linecap="round"/>' +
+      '<path d="' + d + '" fill="none" stroke="#d6644a" stroke-width="15" stroke-linecap="round"/>' +
+      '<path d="' + d + '" transform="translate(0 4)" fill="none" stroke="#a83f2c" stroke-width="6" stroke-linecap="round"/>' +
+      '<path d="M' + (x0 + 6) + ' ' + (y - 4) + ' Q' + (x0 + x1) / 2 + ' ' + (y + b * 2 - 4) + ' ' + (x1 - 10) + ' ' + (y - 4) + '" fill="none" stroke="#ffb59a" stroke-width="3.4" stroke-linecap="round"/>' +
+      '<circle cx="' + (x0 - 11) + '" cy="' + y + '" r="3" fill="#d6644a" stroke="#6e2416" stroke-width="2.4"/><circle cx="' + (x1 + 11) + '" cy="' + y + '" r="3" fill="#d6644a" stroke="#6e2416" stroke-width="2.4"/>';
   }).join('')));
   C.bacon = S(128, 128, tray([56, 71, 86].map(function (y) {
     var w = 'M24 ' + y + ' q10 -6 20 0 t20 0 t20 0 t20 0';
@@ -1069,30 +1074,68 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       '<path d="M118 62 Q122 34 140 30 Q152 30 149 43 Q145 54 140 62Z" fill="' + sk + '" stroke="' + ln + '" stroke-width="3" stroke-linejoin="round"/>');
   }
 
-  // the shopkeeper's open hand (palm to us, fingers up, thumb out; reference drawing from the teacher): she holds the change in it
+  // the shopkeeper's open hand, palm up, seen from her side (fingers away from us, thumb on the left), with her sleeve.
+  // Light from the upper left like the rest of the art: the whole hand is filled with the shadow tone and a copy shifted
+  // toward the light is laid on top, so every finger gets a shadow on its right and lower edge; the cupped palm is darker
+  // in the middle, highlights run along the left edges and the fingertip pads
   function cashierHand(sk) {
-    var ln = shade(sk, .72), dk = shade(sk, .9);
-    var parts = [
-      '<rect x="74" y="186" width="66" height="60" rx="6"/>',
-      '<rect x="36" y="44" width="28" height="92" rx="14" transform="rotate(-17 50 130)"/>',
-      '<rect x="66" y="20" width="30" height="104" rx="15" transform="rotate(-8 81 120)"/>',
-      '<rect x="100" y="8" width="30" height="110" rx="15"/>',
-      '<rect x="132" y="22" width="28" height="98" rx="14" transform="rotate(5 146 118)"/>',
-      '<rect x="150" y="104" width="27" height="80" rx="13.5" transform="rotate(50 160 172)"/>',
-      '<path d="M44 112 Q100 96 166 110 Q174 160 162 186 Q140 206 108 208 Q74 206 60 186 Q46 160 44 112Z"/>'
-    ].join('');
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 250" width="240" height="250">' +
-      '<g fill="' + ln + '" stroke="' + ln + '" stroke-width="7" stroke-linejoin="round">' + parts + '</g>' +
-      '<g fill="' + sk + '">' + parts + '</g>' +
-      // shading on the side of the palm and the wrist, crease line, highlights
-      '<path d="M150 118 Q170 150 158 184 Q146 198 128 204 Q150 170 150 118Z" fill="' + dk + '"/>' +
-      '<path d="M112 192 Q128 204 140 204 V246 H112Z" fill="' + dk + '"/>' +
-      '<path d="M64 126 Q104 112 150 118" fill="none" stroke="' + ln + '" stroke-width="3" stroke-linecap="round"/>' +
-      '<path d="M70 132 Q96 124 120 124" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="3" stroke-linecap="round"/>' +
-      '<path d="M136 166 Q150 150 168 142" fill="none" stroke="' + ln + '" stroke-width="3" stroke-linecap="round"/>' +
-      [[50, 58], [80, 34], [114, 22], [146, 36]].map(function (p) { return '<ellipse cx="' + p[0] + '" cy="' + p[1] + '" rx="6" ry="3" fill="#fff" opacity=".6" transform="rotate(-20 ' + p[0] + ' ' + p[1] + ')"/>'; }).join('') +
-      // the cuff of her striped top
-      '<rect x="66" y="222" width="82" height="28" rx="6" fill="#f3f5f7" stroke="#33465e" stroke-width="3"/><path d="M70 232 H144 M70 242 H144" stroke="#d6453a" stroke-width="3"/>' +
+    function mixC(a, b, t) { var x = parseInt(a.slice(1), 16), y = parseInt(b.slice(1), 16); return '#' + [16, 8, 0].map(function (s) { var p = (x >> s) & 255, q = (y >> s) & 255; return Math.round(p + (q - p) * t).toString(16).padStart(2, '0'); }).join(''); }
+    var ln = mixC(sk, '#24121c', .55), sh = mixC(sk, '#3a1830', .2), sh2 = mixC(sk, '#3a1830', .34), li = mixC(sk, '#ffffff', .38), id = U('ch');
+    function r1(v) { return Math.round(v * 10) / 10; }
+    // a finger: base (bx, by), tilt in degrees (0 = straight up), length, width at the base and at the tip
+    function finger(bx, by, a, len, w0, w1) {
+      var t = a * Math.PI / 180, ux = Math.sin(t), uy = -Math.cos(t), nx = -uy, ny = ux, tx = bx + ux * len, ty = by + uy * len, h0 = w0 / 2, h1 = w1 / 2;
+      return { d: 'M' + r1(bx - nx * h0) + ' ' + r1(by - ny * h0) + ' L' + r1(tx - nx * h1) + ' ' + r1(ty - ny * h1) +
+        ' A' + h1 + ' ' + h1 + ' 0 0 1 ' + r1(tx + nx * h1) + ' ' + r1(ty + ny * h1) + ' L' + r1(bx + nx * h0) + ' ' + r1(by + ny * h0) + 'Z',
+        at: function (k, off) { return [bx + ux * len * k + nx * (off || 0), by + uy * len * k + ny * (off || 0)]; }, ux: ux, uy: uy, nx: nx, ny: ny, w0: w0, w1: w1 };
+    }
+    var F = [finger(88, 118, -7, 76, 29, 24), finger(115, 110, -1, 86, 30, 25), finger(142, 114, 5, 80, 29, 24), finger(166, 128, 12, 60, 26, 21)];
+    var thumb = finger(86, 176, -42, 62, 38, 25);
+    var palm = 'M98 224 C90 210 74 200 68 182 C62 164 68 132 76 114 C100 104 152 106 178 122 C186 146 184 176 172 198 C164 210 154 216 152 224Z';
+    var all = F.map(function (f) { return f.d; }).join(' ') + ' ' + thumb.d + ' ' + palm;
+    function path(d, fill, op) { return '<path d="' + d + '" fill="' + fill + '"' + (op != null ? ' opacity="' + op + '"' : '') + '/>'; }
+    function line(d, col, w, op) { return '<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="' + w + '" stroke-linecap="round"' + (op != null ? ' opacity="' + op + '"' : '') + '/>'; }
+    function P2(p) { return r1(p[0]) + ' ' + r1(p[1]); }
+    // the knuckle creases across each finger (palm side) and the pad highlight near the tip
+    var creases = '', pads = '', edges = '';
+    F.concat([thumb]).forEach(function (f, i) {
+      var ks = i === 4 ? [.5] : [.36, .64];
+      ks.forEach(function (k) {
+        var w = (f.w0 + (f.w1 - f.w0) * k) / 2 - 4, a = f.at(k, -w), b = f.at(k, w), m = f.at(k - .03, 0);
+        creases += line('M' + P2(a) + ' Q' + P2(m) + ' ' + P2(b), ln, 2.2, .4);
+      });
+      var tp = f.at(.9, -f.w1 * .12);
+      pads += '<ellipse cx="' + r1(tp[0]) + '" cy="' + r1(tp[1]) + '" rx="' + r1(f.w1 * .2) + '" ry="' + r1(f.w1 * .13) + '" fill="' + li + '" opacity=".9" transform="rotate(' + r1(Math.atan2(f.uy, f.ux) * 180 / Math.PI + 90) + ' ' + r1(tp[0]) + ' ' + r1(tp[1]) + ')"/>';
+      var e0 = f.at(.4, -f.w0 / 2 + 6), e1 = f.at(.78, -f.w1 / 2 + 6);
+      if (i < 4) edges += line('M' + P2(e0) + ' L' + P2(e1), li, 2.4, .3);
+    });
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 250" width="240" height="250"><defs>' +
+      '<clipPath id="' + id + 'c"><path d="' + all + '"/><path d="M96 200 H150 V232 H96Z"/></clipPath>' +
+      '<clipPath id="' + id + 'p"><path d="' + palm + '"/></clipPath>' +
+      rad(id + 'g', [[0, sh2, .5], [.55, sh2, .22], [1, sh2, 0]], .5, .5, .5) +
+      lin(id + 's', [[0, '#ffffff'], [.6, '#f3f5f7'], [1, '#c9d0d8']]) + '</defs>' +
+      // wrist (under the sleeve), then the outline of everything, then the shadow tone
+      '<g fill="' + ln + '" stroke="' + ln + '" stroke-width="7" stroke-linejoin="round">' + path(all) + '<path d="M98 200 Q123 210 148 200 L150 236 H96Z"/></g>' +
+      '<g clip-path="url(#' + id + 'c)">' +
+        '<rect width="240" height="250" fill="' + sh + '"/>' +
+        // the lit copy, shifted toward the light
+        '<g transform="translate(-6 -5)">' + path(all, sk) + '<path d="M98 200 Q123 210 148 200 L150 240 H96Z" fill="' + sk + '"/></g>' +
+        // the cupped middle of the palm, and the edge of the palm under the pinky
+        '<g clip-path="url(#' + id + 'p)"><ellipse cx="134" cy="166" rx="56" ry="50" fill="url(#' + id + 'g)"/>' + path('M180 120 C176 150 172 180 158 210 L190 210 V120Z', sh, .9) + '</g>' +
+        // shadow where the fingers meet the palm, and the sleeve's shadow on the wrist
+        [0, 1, 2].map(function (i) { var p = F[i].at(.06, F[i].w0 / 2), q = F[i + 1].at(.06, -F[i + 1].w0 / 2), x = (p[0] + q[0]) / 2, y = (p[1] + q[1]) / 2; return line('M' + r1(x) + ' ' + r1(y - 6) + ' L' + r1(x + 1) + ' ' + r1(y + 4), sh2, 3, .3); }).join('') + path('M92 214 Q123 224 154 214 L154 228 H92Z', sh2, .7) +
+      '</g>' +
+      // palm lines: life line around the thumb mound, head line, heart line; wrist crease
+      line('M96 140 C102 160 104 182 114 204', ln, 2.4, .38) + line('M97 144 C118 148 136 154 150 166', ln, 2.2, .3) + line('M108 134 C130 134 152 138 170 148', ln, 2.2, .3) +
+      line('M106 204 Q122 209 138 205', ln, 2, .35) +
+      creases +
+      // highlights: the thumb mound, the heel of the hand, the left edge of each finger, the fingertip pads
+      line('M76 166 C73 152 75 138 80 126', li, 3.4, .55) +
+      edges + pads +
+      // the sleeve of her striped top: lit on the left, shaded on the right, with its own outline
+      '<path d="M84 216 Q123 206 162 216 L166 250 H80Z" fill="url(#' + id + 's)" stroke="#33465e" stroke-width="3.5" stroke-linejoin="round"/>' +
+      line('M83 227 Q123 218 163 227', '#d6453a', 3.4) + line('M82 239 Q123 230 165 239', '#d6453a', 3.4) +
+      line('M90 216 Q110 211 124 211', '#fff', 3, .9) +
       '</svg>';
   }
 
@@ -1384,6 +1427,9 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
   var phrase = CSD.phrase, joinList = CSD.joinList, lineText = CSD.lineText, rnd = CSD.rnd, shuffle = CSD.shuffle;
   var genOrder = CSD.genOrder, keyOf = CSD.keyOf, scoreOrder = CSD.scoreOrder;
   var SIZE_H = { small: 68, medium: 88, large: 110 }, SINGLE_H = 104;
+  // the emoji are all drawn the same size: a peach is smaller and a pineapple bigger than an apple, on the shelf and in the basket
+  var REAL = { peach: .8, pineapple: 1.22 };
+  function itemH(p, sz) { return (sz ? SIZE_H[sz] : SINGLE_H) * (REAL[p.id] || 1); }
   var TEX = 192; // food textures are TEX x TEX
 
 
@@ -3033,9 +3079,11 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       });
       // the shopkeeper's open hand; the change goes on her palm
       M.cash = this.add.container(0, 0);
-      M.cash.add(this.add.image(700, bot + 12, 'ui_cashHand').setOrigin(.5, 1).setDisplaySize(200, 208).setFlipX(true)); // thumb on the left (teacher)
+      M.cash.add(this.add.image(700, bot + 12, 'ui_cashHand').setOrigin(.5, 1).setDisplaySize(200, 208)); // thumb on the left (teacher)
       M.layer.add(M.cash);
       M.pile = { x: 694, y: 652 };
+      // the money's shadow on her palm, only while there is money on it
+      M.cash.add(M.shade = this.add.image(M.pile.x + 4, M.pile.y + 6, 'ui_shadow').setDisplaySize(130, 52).setAlpha(.55).setVisible(false));
       M.drop = new Phaser.Geom.Rectangle(580, 500, 240, 230);
       var pill = this.add.graphics();
       pill.fillStyle(0x000000, .25); pill.fillRoundedRect(582, top + 3, 240, 46, 23);
@@ -3103,22 +3151,30 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       var M = this.till;
       M.sum = M.items.reduce(function (t, im) { return t + im.d.v; }, 0);
       M.sumT.setText('Change: ' + fmtMoney(M.sum));
+      M.shade.setVisible(M.items.length > 0);
       M.give.setEnabled(M.sum > 0);
     },
-    // she reaches over to the customer and the change goes into their hand; exact change = the sale counts
+    // her hand moves a little forward and fades, and the change shows up in the customer's hand; exact change = the sale counts
     giveChange: function () {
       var s = this, M = this.till;
       if (M.done || !M.sum) return;
       M.done = true; M.give.setEnabled(false);
       M.items.forEach(function (im) { im.disableInteractive(); });
-      var dx = M.palm.x + 10 - M.pile.x, dy = M.palm.y + 30 - M.pile.y;
-      this.tweens.add({ targets: M.cash, x: dx, y: dy, duration: D(480), ease: 'Cubic.easeInOut', onComplete: function () {
-        // the money stays in the customer's hand while her hand goes back
-        var pile = s.add.container(0, 0);
-        M.items.forEach(function (im) { var w = im.getWorldTransformMatrix(); pile.add(s.add.image(w.tx, w.ty, im.d.key).setDisplaySize(im.displayWidth, im.displayHeight).setAngle(im.angle)); im.destroy(); });
-        M.items = []; M.fx.add(pile); M.handPile = pile;
+      // her hand moves a little forward (up and smaller, away from us) and fades; the money shows up in the customer's hand
+      var dx = M.palm.x + 10 - M.pile.x, dy = M.palm.y + 30 - M.pile.y, k = .9, cx = 700, cy = 610;
+      var pile = s.add.container(0, 12).setAlpha(0);
+      M.items.forEach(function (im) { pile.add(s.add.image(im.x + dx, im.y + dy, im.d.key).setDisplaySize(im.displayWidth, im.displayHeight).setAngle(im.angle)); });
+      M.fx.add(pile); M.handPile = pile;
+      if (RM) { M.cash.setVisible(false); pile.setAlpha(1).setY(0); }
+      else {
+        this.tweens.add({ targets: M.cash, x: cx * (1 - k), y: cy * (1 - k) - 34, scale: k, duration: D(420), ease: 'Sine.easeOut' });
+        this.tweens.add({ targets: M.cash, alpha: 0, delay: D(120), duration: D(300), ease: 'Quad.easeIn' });
+        this.tweens.add({ targets: pile, y: 0, alpha: 1, delay: D(200), duration: D(260), ease: 'Quad.easeOut' });
+      }
+      this.time.delayedCall(RM ? 0 : D(460), function () {
+        M.items.forEach(function (im) { im.destroy(); });
+        M.items = [];
         SFX.pick();
-        s.tweens.add({ targets: M.cash, x: 0, y: 0, duration: D(380), ease: 'Cubic.easeOut' });
         var ok = M.sum === M.change, c = cur();
         if (ok) {
           G.sales += M.total; earn(M.total);
@@ -3147,7 +3203,7 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
           else { s.tweens.add({ targets: M.layer, y: 260, alpha: 0, duration: 300, ease: 'Back.easeIn' }); s.tweens.add({ targets: pile, alpha: 0, x: -60, duration: 300, onComplete: function () { pile.destroy(); } }); }
           s.tipJar();
         });
-      } });
+      });
     },
     // the tip appears in the customer's hand and flies into the tip jar; the streak bonus follows as coins
     tipJar: function () {
@@ -3341,7 +3397,7 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
       // products: groups (sized products show three sizes)
       var groups = PRODUCTS.filter(function (p) { return p.aisle === a && (!p.x || G.day.big); }).map(function (p) {
         var sizes = (G.day.sizes && p.sized) ? SIZES : [null];
-        var w = sizes.reduce(function (t, sz) { return t + (sz ? SIZE_H[sz] * .9 : SINGLE_H * 1.15) + 12; }, 0) + 30;
+        var w = sizes.reduce(function (t, sz) { return t + (sz ? SIZE_H[sz] * .9 : itemH(p, sz) * 1.15) + 12; }, 0) + 30;
         return { p: p, sizes: sizes, w: w };
       });
       // split onto two boards, balancing width
@@ -3354,7 +3410,7 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
         row.forEach(function (gp) {
           var gx = x + 15;
           gp.sizes.forEach(function (sz) {
-            var hh = sz ? SIZE_H[sz] : SINGLE_H, ww = sz ? SIZE_H[sz] * .9 : SINGLE_H * 1.15;
+            var hh = itemH(gp.p, sz), ww = sz ? SIZE_H[sz] * .9 : hh * 1.15;
             var cx = gx + ww / 2;
             s.shelf.add(s.add.image(cx, boardY, 'ui_shadow').setDisplaySize(ww * 1.1, 16).setAlpha(.8));
             var im = s.add.image(cx, boardY + 2, 'f_' + gp.p.id).setOrigin(.5, 1).setDisplaySize(hh * 1.08, hh * 1.08);
@@ -3468,7 +3524,7 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
     spawn: function (p, size, x, y) {
       var key = keyOf(p, size);
       if (this.countKey(key) >= 6) { this.shake(); return null; }
-      var hh = size ? SIZE_H[size] : SINGLE_H, sc = hh * 1.08 / TEX, sh = p.sh, k = 1.5;
+      var hh = itemH(p, size), sc = hh * 1.08 / TEX, sh = p.sh, k = 1.5;
       var opts = { restitution: .25, friction: .55, frictionAir: .012, density: .002, chamfer: sh[0] === 'r' ? { radius: 10 * k } : undefined };
       opts.shape = sh[0] === 'c' ? { type: 'circle', radius: sh[1] * k } : { type: 'rectangle', width: sh[1] * k, height: sh[2] * k };
       var img = this.matter.add.image(x, y, 'f_' + p.id, null, opts);
@@ -4611,7 +4667,18 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
 #volver b{width:0;height:0;border-style:solid;border-width:8px 10px 8px 0;border-color:transparent #ffd23f transparent transparent;order:-1}
 </style>
 <a id="volver" href="../index.html" aria-label="Back to games" title="Back to games"><b></b><img alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAACj0lEQVR4AcSUS0hUURjHP2dXCpEtJmhhUaEmiCXVQLtwVUkhUUhE2EIkiKCgx87a1BS2lHBTQVBBRq+JpKFNxEy1EcFGsaCBAgdyejAGEXSb30ffcO6duXdoEQm/e873/J+XE5N//Pd/Bbo3bfSgsbHZC6PeAYTugMYzs3mBqCYIR8VrCljzqEI3FiVSU6Deqt3m9eY1BdpaW7SO8VmyV4C5i+vT5JBPTQFyaTB6uFNaVncoqXP94oKf+GBiCemhVAnYebZv2yvJa0/kyPCI4nYwH/GuDes1ZHVqOB+fAEnvbp8WVvb9Y07GX8/LRO6njA6fcEpEbYsRuHyoTaijHtvFJ+AGmDc1rWBQlq5ql/z7aQWHG8MmxhikSsAS495mKV25qiujKPfiDkMFVly6NS5blvWpb/LNnI7Bj09gcbHYsP3UQwH58k1z459bZeWuk3rRXCxg45c/OcevzwhQr0XOxyeAn6Qy8urrXSksn1XmH11UERoDNrGxTFKA/DIN1AepEuCiPM+TX91Det6cPdDUoMn9x/cYpPPgiGQyGeYenyAVARqDJSQSCRXh7IG7Mdzmll+ulTL6o2g+xooARqm0IGAvxETYDffCRTKyaqAGenp2al06ncL0oQIo8yoKqUsCltG1dUyGjk0JQghzkYzY+w7ckIFk3lK1bs3Cc+F/gn4WiGHQ3ByMJLGLyZeDAviA5oxw9seE9KWPCqt363fv2OMT0R1Q8LcMfJiT3qcP6pZVCdgFUpnNZiUKcoLwEFxfjPe7dv8FfZLWnLNe13Fez587iKI53i9Wb82ppy9CugMMXgcBoDnB4qcpeTt9JhTi5CFCvUE//KACTHACc2taLNwUfGEQN6izPObGbwAAAP//8XfKXwAAAAZJREFUAwDYK6p4a6z+dAAAAABJRU5ErkJggg=="></a>
-<script>/* portal: volver */if (/\/corner-shop\/(index\.html)?$/.test(location.pathname)) document.getElementById('volver').style.display = 'flex';</script>
+<script>/* portal: volver */if (/\/corner-shop\/(index\.html)?$/.test(location.pathname)) document.getElementById('volver').style.display = 'flex';</script><style>#volver.abajo{top:auto;bottom:env(safe-area-inset-bottom,0px);border-radius:0 16px 0 0;box-shadow:0 -2px 0 #1a0f4d,0 -4px 14px rgba(0,0,0,.35)}</style>
+<script>/* portal: volver solo en la portada */(function(){
+  var b = document.getElementById('volver');
+  if (b.style.display !== 'flex') return;
+  b.classList.add('abajo');
+  function ver() {
+    var t = false;
+    try { t = window.CornerShopTest.game.scene.isActive('Title'); } catch (e) { /* aún cargando */ }
+    b.style.display = t ? 'flex' : 'none';
+  }
+  ver(); setInterval(ver, 300);
+})();</script>
 <script>/* portal: pantalla completa */(function(){
   if (!matchMedia('(pointer: coarse)').matches) return;
   function completa(e) {
