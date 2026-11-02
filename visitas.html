@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Visitas</title>
+<style>
+  body { margin: 0; padding: 24px 16px; background: #2b1a5e; color: #fff; font: 16px/1.4 system-ui, sans-serif; }
+  main { max-width: 520px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 16px; }
+  table { width: 100%; border-collapse: collapse; background: rgba(255,255,255,.08); border-radius: 10px; overflow: hidden; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,.12); }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.portal td { font-weight: 700; background: rgba(255,255,255,.1); }
+  p { opacity: .75; font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Visitas del portal</h1>
+  <table>
+    <thead><tr><th></th><th class="n">Este mes</th><th class="n">Mes pasado</th><th class="n">Total</th></tr></thead>
+    <tbody id="filas"></tbody>
+  </table>
+  <p>Portal: personas que abrieron la página (una vez por sesión). Juegos: veces que se tocó cada tarjeta. No cuenta lo jugado sin internet. Empezó a contar el 2 de noviembre de 2026.</p>
+</main>
+<script>
+(function () {
+  const BASE = 'https://abacus.jasoncameron.dev/get/teacher-cesar-games/';
+  const filas = [['portal', 'Portal']].concat([["corner-shop","Corner Shop"],["face-maker","Face Maker"],["verb-climber","Verb Climber"]]);
+  const d = new Date();
+  const mes = d.toISOString().slice(0, 7);
+  const antes = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 1, 1)).toISOString().slice(0, 7);
+  const leer = (k) => fetch(BASE + k).then((r) => r.json()).then((j) => j.value || 0).catch(() => 0);
+  const tb = document.getElementById('filas');
+  filas.forEach(([id, nombre]) => {
+    const tr = document.createElement('tr');
+    if (id === 'portal') tr.className = 'portal';
+    tr.innerHTML = '<td></td><td class="n">…</td><td class="n">…</td><td class="n">…</td>';
+    tr.cells[0].textContent = nombre;
+    tb.appendChild(tr);
+    [id + '-' + mes, id + '-' + antes, id].forEach((k, i) => leer(k).then((v) => { tr.cells[i + 1].textContent = v.toLocaleString('es'); }));
+  });
+})();
+</script>
+</body>
+</html>

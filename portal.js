@@ -17,6 +17,21 @@
   });
   window.addEventListener('appinstalled', () => { btnInstalar.hidden = true; });
 
+  // Contador de visitas anónimo (sin cookies ni datos): solo suma 1 al total y al mes.
+  // Una vez por sesión del navegador; solo en la página publicada. Los números se ven en visitas.html
+  const CONTADOR = 'https://abacus.jasoncameron.dev/hit/teacher-cesar-games/';
+  const mes = new Date().toISOString().slice(0, 7);
+  function contar(clave) { try { fetch(CONTADOR + clave, { mode: 'no-cors', keepalive: true }).catch(() => {}); } catch (e) { /* sin internet */ } }
+  if (/\.github\.io$/.test(location.hostname)) {
+    let nueva = true;
+    try { nueva = !sessionStorage.getItem('contado'); sessionStorage.setItem('contado', '1'); } catch (e) { /* navegador privado */ }
+    if (nueva) { contar('portal'); contar('portal-' + mes); }
+    document.querySelectorAll('a.tarjeta').forEach((a) => a.addEventListener('click', () => {
+      const id = a.getAttribute('href').split('/')[0];
+      contar(id); contar(id + '-' + mes);
+    }));
+  }
+
   // Service worker: guarda el portal y los tres juegos para jugar sin internet
   if (!('serviceWorker' in navigator) || !/^https?:$/.test(location.protocol)) return;
   const habiaControl = !!navigator.serviceWorker.controller;

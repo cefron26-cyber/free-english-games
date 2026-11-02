@@ -22,8 +22,9 @@ const ARCHIVOS = {
  "miniaturas/corner-shop.jpg": "4624560079",
  "miniaturas/face-maker.jpg": "1b4048e4f7",
  "miniaturas/verb-climber.jpg": "3a778fe964",
- "portal.js": "379ae3aa2e",
- "verb-climber/index.html": "781c9af6be"
+ "portal.js": "a0552d4712",
+ "verb-climber/index.html": "781c9af6be",
+ "visitas.html": "e751e0559e"
 };
 const JUEGOS = ["corner-shop/index.html","face-maker/index.html","verb-climber/index.html"];
 const CACHE = 'portal-juegos';
