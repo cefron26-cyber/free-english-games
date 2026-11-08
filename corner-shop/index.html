@@ -3575,7 +3575,9 @@ html,body{margin:0;height:100%;background:#1f6966;overflow:hidden;overscroll-beh
     },
     takeBack: function (im) {
       var M = this.till;
-      M.items.splice(M.items.indexOf(im), 1);
+      var at = M.items.indexOf(im);
+      if (at < 0) return; // already taken back (a second tap): splice(-1) would drop the last bill instead
+      M.items.splice(at, 1);
       im.disableInteractive();
       this.tweens.add({ targets: im, x: im.d.x, y: im.d.y, alpha: 0, duration: D(220), onComplete: function () { im.destroy(); } });
       SFX.click();
