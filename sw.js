@@ -25,7 +25,7 @@ const ARCHIVOS = {
  "miniaturas/verb-climber.jpg": "3a778fe964",
  "portal.js": "a0552d4712",
  "sketch-detective/index.html": "118fed070f",
- "verb-climber/index.html": "781c9af6be",
+ "verb-climber/index.html": "ac2cfb88f2",
  "visitas.html": "cc7e060129"
 };
 const JUEGOS = ["corner-shop/index.html","face-maker/index.html","verb-climber/index.html","sketch-detective/index.html"];

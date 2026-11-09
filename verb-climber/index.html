@@ -786,9 +786,16 @@ const input = { left: false, right: false, jump: false };
 const pointers = new Map(); // pointerId -> {x, y} en píxeles reales
 let firstInteractionDone = false;
 
+// Si ← y → están apretados a la vez, gana el ÚLTIMO que se apretó (antes se anulaban y no se podía ir a la izquierda)
+const rawDir = { left: false, right: false };
+let lastDir = 'right';
 function syncInput() {
-  input.left = keys.left || touchBtn.left;
-  input.right = keys.right || touchBtn.right;
+  const l = keys.left || touchBtn.left, r = keys.right || touchBtn.right;
+  if (l && !rawDir.left) lastDir = 'left';
+  if (r && !rawDir.right) lastDir = 'right';
+  rawDir.left = l; rawDir.right = r;
+  input.left = l && (!r || lastDir === 'left');
+  input.right = r && (!l || lastDir === 'right');
   input.jump = keys.jump || touchBtn.jump;
 }
 function onJumpPressed() { if (state === 'play' && player) player.jumpBuf = JUMP_BUFFER; }
@@ -799,9 +806,11 @@ function updateTouchButtons() {
   if (controlsActive()) {
     for (const p of pointers.values()) {
       if (p.y < ctrl.panelY - 20 * dpr) continue; // solo dentro del panel de controles (con margen)
-      if (p.x < ctrl.split1) nb.left = true;
-      else if (p.x < ctrl.split2) nb.right = true;
-      else nb.jump = true;
+      const zone = p.x < ctrl.split1 ? 'left' : p.x < ctrl.split2 ? 'right' : 'jump';
+      // Cada dedo se queda con su botón: el dedo de JUMP que se corre a la izquierda NO cuenta como →
+      // (eso anulaba la ←). Entre ← y → sí se puede deslizar.
+      if (!p.btn || (p.btn !== 'jump' && zone !== 'jump')) p.btn = zone;
+      nb[p.btn] = true;
     }
   }
   for (const k of ['left', 'right', 'jump']) {
@@ -838,7 +847,7 @@ canvas.addEventListener('pointerdown', (e) => {
 canvas.addEventListener('pointermove', (e) => {
   if (!pointers.has(e.pointerId)) return;
   e.preventDefault();
-  pointers.set(e.pointerId, { x: e.clientX * dpr, y: e.clientY * dpr });
+  const pp = pointers.get(e.pointerId); pp.x = e.clientX * dpr; pp.y = e.clientY * dpr;
   updateTouchButtons(); uiPointerMove(e.pointerId, e.clientX * dpr, e.clientY * dpr);
 });
 function endPointer(e) {
@@ -2278,6 +2287,7 @@ function updateCountdown(dt) {
   }
   if (cdT >= 2.1) {
     state = 'play'; screenT = 0; G.goT = 0.6; SFX.go(); startMusic();
+    updateTouchButtons(); // toma los dedos/teclas que ya estaban apretados y limpia lo que dejó el tutorial
     unlock('first');
   }
   for (const row of G.rows) if (row.spawnT < ROW_APPEAR_T) row.spawnT += dt;
@@ -2563,7 +2573,7 @@ function pauseGame() {
     makeBtn('MENU', VW / 2, y + 68, 116, 24, 2, () => goTo(enterTitle), 0.12),
   ];
 }
-function resumeGame() { state = 'play'; uiButtons = []; startMusic(); }
+function resumeGame() { state = 'play'; uiButtons = []; startMusic(); updateTouchButtons(); }
 function drawPause(c) {
   c.fillStyle = 'rgba(11,11,18,0.7)'; c.fillRect(0, 0, VW, VH);
   drawWordO('PAUSED', VW / 2, R(VH * 0.45) - 46, 3, PAL.W, PAL.N, 'center', c);
