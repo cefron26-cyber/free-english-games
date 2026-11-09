@@ -21,10 +21,10 @@ const ARCHIVOS = {
  "manifest.webmanifest": "64dbdd3dd1",
  "miniaturas/corner-shop.jpg": "4624560079",
  "miniaturas/face-maker.jpg": "1b4048e4f7",
- "miniaturas/sketch-detective.jpg": "e152202a49",
+ "miniaturas/sketch-detective.jpg": "0409dc5739",
  "miniaturas/verb-climber.jpg": "3a778fe964",
  "portal.js": "a0552d4712",
- "sketch-detective/index.html": "dfc3d59817",
+ "sketch-detective/index.html": "118fed070f",
  "verb-climber/index.html": "781c9af6be",
  "visitas.html": "cc7e060129"
 };
