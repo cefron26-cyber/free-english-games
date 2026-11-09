@@ -60,7 +60,7 @@ main { width: 100%; max-width: 1180px; flex: 1; display: flex; flex-direction: c
 .tarjeta {
   --oscuro: color-mix(in srgb, var(--c), #000 32%);
   --claro: color-mix(in srgb, var(--c), #fff 35%);
-  position: relative; flex: 0 1 340px; min-width: 0; display: flex; flex-direction: column;
+  position: relative; flex: 0 1 262px; min-width: 0; display: flex; flex-direction: column;
   padding: 12px 12px 0; border-radius: 30px; text-decoration: none; color: #fff; background: var(--c);
   box-shadow: inset 0 5px 0 var(--claro), inset 0 -5px 0 rgba(0, 0, 0, .08), 0 12px 0 var(--oscuro), 0 26px 30px var(--sombra);
   transform: rotate(calc((var(--i) - 1) * 1.4deg));

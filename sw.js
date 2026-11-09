@@ -3,7 +3,7 @@
 const ARCHIVOS = {
  "avatar.png": "b39dc88299",
  "corner-shop/index.html": "84b28e1d61",
- "estilos.css": "dc9fe293e6",
+ "estilos.css": "9f25c1958d",
  "face-maker/index.html": "3570214b0e",
  "fuentes/fredoka-latin-600-normal.woff2": "b9fca786c0",
  "fuentes/LICENSE-fredoka.txt": "2a60a248a9",
@@ -17,16 +17,18 @@ const ARCHIVOS = {
  "iconos/icono-192.png": "442e7dc1fa",
  "iconos/icono-512.png": "0cf5e40257",
  "iconos/icono-maskable-512.png": "0cf5e40257",
- "index.html": "912b4b63db",
+ "index.html": "70a9492d81",
  "manifest.webmanifest": "64dbdd3dd1",
  "miniaturas/corner-shop.jpg": "4624560079",
  "miniaturas/face-maker.jpg": "1b4048e4f7",
+ "miniaturas/sketch-detective.jpg": "e152202a49",
  "miniaturas/verb-climber.jpg": "3a778fe964",
  "portal.js": "a0552d4712",
+ "sketch-detective/index.html": "dfc3d59817",
  "verb-climber/index.html": "781c9af6be",
- "visitas.html": "e751e0559e"
+ "visitas.html": "cc7e060129"
 };
-const JUEGOS = ["corner-shop/index.html","face-maker/index.html","verb-climber/index.html"];
+const JUEGOS = ["corner-shop/index.html","face-maker/index.html","verb-climber/index.html","sketch-detective/index.html"];
 const CACHE = 'portal-juegos';
 const BASE = new URL('./', self.location).href;
 const clave = (f) => BASE + f + '?v=' + ARCHIVOS[f];
